@@ -17,9 +17,14 @@
 
 class PhysicalValueList:
 
-    def __init__(self, unit, values, roundingErrorTolerance = 1.e-7):
+    def __init__(self, unit, numbers, roundingErrorTolerance = 1.e-7):
+        """ctor
+        unit: common entity of all physical values
+        numbers: numbers withouth unit. must be a list
+        roundingErrorTolerance: rounding error tolerance
+        """
         self._unit = unit
-        self._values = values
+        self._numbers = numbers
         self.__iterCounter = 0
         self._roundingErrorTolerance = roundingErrorTolerance
         return
@@ -28,21 +33,21 @@ class PhysicalValueList:
     def unit(self): return self._unit
 
 
-    def values(self): return self._values
+    def numbers(self): return self._numbers
 
 
     def index(self, pv):
         v = pv/self._unit 
         try:
-            return self._values.index( v )
+            return self._numbers.index( v )
         except ValueError, e:
             if "not in list" in str(e):
-                return searchIndex( v, self._values, self._roundingErrorTolerance)
+                return searchIndex( v, self._numbers, self._roundingErrorTolerance)
             raise
         raise
 
 
-    def __len__(self): return len(self._values)
+    def __len__(self): return len(self._numbers)
 
 
     def __eq__(self, other):
@@ -51,7 +56,7 @@ class PhysicalValueList:
         try: conversion = other._unit/self._unit
         except: return False
         if not isNumber(conversion): return False
-        for v1, v2 in zip(self._values, other._values):
+        for v1, v2 in zip(self._numbers, other._numbers):
             if abs(v1-v2*conversion) > abs(v1) * self._roundingErrorTolerance: return False
             continue
         return True
@@ -61,7 +66,7 @@ class PhysicalValueList:
 
 
     def __getitem__(self, s):
-        vs = self._values[s]
+        vs = self._numbers[s]
         if "__iter__" in dir(vs): return PhysicalValueList( self._unit, vs )
         return self._unit*vs
 
@@ -69,7 +74,7 @@ class PhysicalValueList:
     def __setitem__(self, s, v):
         if isinstance(s, slice):
             raise NotImplementedError
-        self._values[s] = v/self._unit
+        self._numbers[s] = v/self._unit
         return
 
 
@@ -77,7 +82,7 @@ class PhysicalValueList:
     
     def next(self):
         if self.__iterCounter < len(self):
-            v = self._values[self.__iterCounter]*self._unit
+            v = self._numbers[self.__iterCounter]*self._unit
             self.__iterCounter += 1
             return v
         self.__iterCounter = 0

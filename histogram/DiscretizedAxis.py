@@ -34,16 +34,16 @@ class DiscretizedAxis(AbstractDiscreteAxis):
     
 
     def __getitem__(self, s):
-        if not isSlicingInfo(s): raise NotImplementedError , \
+        if not isRange(s): raise NotImplementedError , \
            "cannot get slice (%s) of axis (%s)" % (s, self)
-        s = self.slicingInfo2IndexSlice( s )
-        newValues = self.values()[s]
-        return DiscretizedAxis( QuantityValueList( self._quantity, newValues ) )
+        s = self.range2IndexSlice( s )
+        newValues = self.values[s]
+        return DiscretizedAxis( QuantityValueList( self.quantity, newValues ) )
 
     pass # end of DiscretizedAxis
     
 
-from SlicingInfo import isSlicingInfo
+from Range import isRange
 from PhysicalValueList import isPhysicalValueList, PhysicalValueList
 from QuantityValueList import QuantityValueList
 
@@ -85,7 +85,7 @@ def test():
             "DiscretizedAxis: a == b"
             axis = self.axis
             import copy
-            vs = copy.deepcopy( axis.values() )
+            vs = copy.deepcopy( axis.values )
             axis1 = DiscretizedAxis( QuantityValueList( Ee, vs ) )
             self.assertEqual( axis, axis1 )
             return
@@ -95,7 +95,7 @@ def test():
             "DiscretizedAxis: a != b"
             axis = self.axis
             import copy
-            vs = copy.deepcopy( axis.values() )
+            vs = copy.deepcopy( axis.values )
             axis1 = DiscretizedAxis( QuantityValueList( Ee, vs ) )
             self.assertEqual( axis != axis1, False)
             return

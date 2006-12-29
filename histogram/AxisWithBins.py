@@ -29,15 +29,15 @@ class AxisWithBins(DiscretizedAxis):
 
 
     def __getitem__(self, s):
-        if not isSlicingInfo(s): raise NotImplementedError , \
+        if not isRange(s): raise NotImplementedError , \
            "cannot get slice (%s)" % s
-        s = self.slicingInfo2IndexSlice( s )
+        s = self.range2IndexSlice( s )
         #need 1 more boundary than center
         step = s.step
         if step is None: step = 1
         #
         newBBs= self._binBoundaries [ slice(s.start, s.stop + step, step) ]
-        newqBBs = QuantityValueList( self.quantity(), newBBs )
+        newqBBs = QuantityValueList( self.quantity, newBBs )
         return AxisWithBins( newqBBs )
 
 
@@ -51,12 +51,12 @@ class AxisWithBins(DiscretizedAxis):
 
 def _calcBinCenters( bbs ):
     unit = bbs.unit()
-    bbvs = bbs.values()
+    bbvs = bbs.numbers()
     bcvs = [ (bbvs[i] + bbvs[i+1])/2. for i in range( len(bbvs) -1 ) ]
     return PhysicalValueList( unit, bcvs )
 
 
-from SlicingInfo import isSlicingInfo
+from Range import isRange
 from QuantityValueList import QuantityValueList
 from PhysicalValueList import PhysicalValueList
 

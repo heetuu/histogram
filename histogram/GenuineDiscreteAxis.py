@@ -22,17 +22,22 @@ class GenuineDiscreteAxis(AbstractDiscreteAxis):
     
 
     def __getitem__(self, s):
-        if not isSlicingInfo(s): raise NotImplementedError , \
+        if not isRange(s): raise NotImplementedError , \
            "cannot get slice (%s) of axis (%s)" % (s, self)
-        s = self.slicingInfo2IndexSlice( s )
-        newValues = self.values()[s]
-        return GenuineDiscreteAxis( QuantityValueList( self._quantity, newValues ) )
+        s = self.range2IndexSlice( s )
+        newValues = self.values[s]
+        return GenuineDiscreteAxis( QuantityValueList( self.quantity, newValues ) )
 
     pass # end of GenuineDiscreteAxis
 
 
-from SlicingInfo import isSlicingInfo
+from Range import isRange
 from QuantityValueList import QuantityValueList
+
+
+def createGenuineDiscreteAxis( quantity, values ):
+    qvl = QuantityValueList( quantity, values )
+    return GenuineDiscreteAxis( qvl )
     
 
 def test():
@@ -72,7 +77,7 @@ def test():
             "GenuineDiscreteAxis: a == b"
             axis = self.axis
             import copy
-            vs = copy.deepcopy( axis.values() )
+            vs = copy.deepcopy( axis.values )
             axis1 = GenuineDiscreteAxis( QuantityValueList( Eb, vs ) )
             self.assertEqual( axis, axis1 )
             return
@@ -82,7 +87,7 @@ def test():
             "GenuineDiscreteAxis: a != b"
             axis = self.axis
             import copy
-            vs = copy.deepcopy( axis.values() )
+            vs = copy.deepcopy( axis.values )
             axis1 = GenuineDiscreteAxis( QuantityValueList( Eb, vs ) )
             self.assertEqual( axis != axis1, False)
             return

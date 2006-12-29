@@ -17,38 +17,38 @@ class AbstractDiscreteAxis:
 
     def __init__(self, quantityValueList ):
         self._qvList = quantityValueList
-        self._quantity = quantityValueList.quantity
-        self._values = quantityValueList.values
+        self.quantity = quantityValueList.quantity
+        self.values = quantityValueList.values #
         assert len(quantityValueList) > 2, "an axis must have at least 3 ticks"
         return
 
 
-    def quantity(self): return self._quantity
-
-
-    def values(self):
+    def ticks(self):
         "return values of 'ticks'"
-        return self._values
+        return self.values
 
 
     def index(self, value):
         """return index of value in the 'ticks'
         overload this method to provide more complex behavior
         """
-        return self._values.index( value )
+        return self.values.index( value )
 
 
-    def slicingInfo2IndexSlice(self, slicingInfo):
-        """slicingInfo2IndexSlice(slicingInfo) --> slice instance
+    def range2IndexSlice(self, range):
+        """range2IndexSlice(range) --> slice instance
         note: slicing is inclusive
         """
-        start, end = slicingInfo.start, slicingInfo.end
-        values = self._values
+        start, end = range.start, range.end
+        values = self.values
         if start == front: start = values[0]
         if end == back: end = values[-1]
         #slice. +1 to make the end bracket inclusive
         s = self.index( start ), self.index( end ) + 1
         return slice( *s )
+
+
+    def __len__(self): return len(self.values)
 
 
     def __eq__(self, rhs):
@@ -65,14 +65,14 @@ class AbstractDiscreteAxis:
 
 
     def __str__(self):
-        vs = self.values()
+        vs = self.values
         return "%s: [%s, %s, ..., %s]" % (
-            self._quantity, vs[0], vs[1], vs[-1] )
+            self.quantity, vs[0], vs[1], vs[-1] )
         
     pass
 
 
-from SlicingInfo import front, back
+from Range import front, back
 
 
 import unittest as ut
@@ -90,26 +90,26 @@ class TestCase(ut.TestCase):
     def test_quantity(self):
         "DiscreteAxis: quantity"
         axis = self.axis
-        axis.quantity()
+        axis.quantity
         return
 
 
     def test_values(self):
         "DiscreteAxis: values"
         axis = self.axis
-        axis.values()
+        axis.values
         return
 
 
-    def test_slicingInfo2IndexSlice(self):
-        "DiscreteAxis: slicinginfo2indexslice"
+    def test_range2IndexSlice(self):
+        "DiscreteAxis: range2indexslice"
         axis = self.axis
-        values = axis.values()
+        values = axis.values
         v1 = values[0] 
         v2 = values[-2] 
-        from SlicingInfo import SlicingInfo
-        si = SlicingInfo( v1, v2 )
-        s = axis.slicingInfo2IndexSlice( si )
+        from Range import Range
+        si = Range( v1, v2 )
+        s = axis.range2IndexSlice( si )
         self.assertEqual( s, slice(0, len(values)-1) )
         return
 
@@ -117,20 +117,26 @@ class TestCase(ut.TestCase):
     def test___getitem__(self):
         "DiscreteAxis: __getitem__"
         axis = self.axis
-        values = axis.values()
+        values = axis.values
         v1 = values[0] 
         v2 = values[-2] 
-        from SlicingInfo import SlicingInfo
-        si = SlicingInfo( v1, v2 )
+        from Range import Range
+        si = Range( v1, v2 )
         newAxis = axis[ si ]
-        self.assertEqual( axis.quantity(), newAxis.quantity() )
-        self.assertEqual( len(newAxis.values() ), len(values) - 1 )
+        self.assertEqual( axis.quantity, newAxis.quantity )
+        self.assertEqual( len(newAxis.values ), len(values) - 1 )
         return
     
         
     def test_index(self):
         "DiscreteAxis: index"
         raise NotImplementedError
+
+
+    def test___len__(self):
+        "DiscreteAxis: len(axis)"
+        self.assertEqual( len(self.axis), len(self.axis.values) )
+        return
 
 
     def test___eq__(self):

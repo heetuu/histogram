@@ -13,39 +13,39 @@
 
 
 
-def getAxisSlicesAndIndexSlices( axes, slicingInfos ):
-    """getAxisSlicesAndIndexSlices( axes, slicingInfos ) --> noslice, newAxes, indexSlices
+def getAxisSlicesAndIndexSlices( axes, ranges ):
+    """getAxisSlicesAndIndexSlices( axes, ranges ) --> noslice, newAxes, indexSlices
 
     obtain new axes (slices of original axes) and index slices
 
     axes: a list of axes
-    slicingInfos: a list. each element is either a slicingInfo instance,
+    ranges: a list. each element is either a range instance,
       or a single value. 
 
     newAxes: a list of new axis. each axis is either a slice of original axis,
       or a single value.
     indexSlices: a list. each element is either a index slice corresponding to
-      the slicingInfo, or a single index if slicingInfo is actually just a value
-    noslice:  whether slicingInfo is actually a list of only single values
+      the range, or a single index if range is actually just a value
+    noslice:  whether range is actually a list of only single values
     """
     indexSlices = []; noslice = True
     
     newAxes = []
     
-    for slicingInfo, axis in zip(slicingInfos, axes):
+    for range, axis in zip(ranges, axes):
         
-        if not isSlicingInfo( slicingInfo ):
-            # if it is not a slicingInfo instance, it must be a value indexable
+        if not isRange( range ):
+            # if it is not a range instance, it must be a value indexable
             # in this axis.
             
-            value = slicingInfo
+            value = range
             s = axis.index( value )
 
             newAxes.append( value )
         else:
-            s = axis.slicingInfo2IndexSlice( slicingInfo )
+            s = axis.range2IndexSlice( range )
             if noslice: noslice = False
-            newAxes.append( axis[ slicingInfo ] )
+            newAxes.append( axis[ range ] )
             pass
         
         indexSlices.append( s )
@@ -61,7 +61,7 @@ def checkAxesCompatibility( axes1, axes2 ):
     return
 
 
-from SlicingInfo import isSlicingInfo
+from Range import isRange
 
 
 # version

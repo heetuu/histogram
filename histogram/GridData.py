@@ -22,22 +22,21 @@ class GridData:
 
     allowed_axis_types = [GenuineDiscreteAxis] # overload this data
 
-    def __init__(self, name, axes, physical_quantity_type, data, meta = None):
+    def __init__(self, name, axes, zs, meta = None):
         """ctor
         
         name: name of this griddata (or mapping, for subclass
         axes: a list of axes
-        physical_quantity_type, data: physical quantity that 'data' represents,
-          and data itself
+        zs: a PhysicalQuantityValueNdArray instance. z values
+            at each point of the grid defined by the axes
         meta: meta data
         """
         
         #constructor of its subclass must have this same form
         #should create a unit test case
         self._name = name
+        self._zs = zs
         self._addAxes(axes)
-        self._physical_quantity_type = physical_quantity_type
-        self._data = data
         if meta is None: meta = AttributeDictionary()
         self._meta = meta
         return
@@ -49,10 +48,10 @@ class GridData:
     def rename(self, name): self._name = name
 
 
-    def storage(self): return self._data
+    def zs(self): return self._zs
 
 
-    def shape(self): return self._data.shape()
+    def shape(self): return self._zs.shape()
 
 
     def dimension(self): return len(self.shape())
@@ -61,143 +60,100 @@ class GridData:
     def axes(self): return self._axes
 
 
-    def data_pqt(self):
-        """physical quantity type of data"""
-        return self._physical_quantity_type
+    def map(self):
+        xs = [ axis.quantity for axis in self.axes() ]
+        return (xs, self.zs().quantity)
 
 
-     #operators
-    def __iadd__(self, other):
-        if other is None: return self
-        stor = self.storage()
-        if isPhysicalQuantity(other):
-            other = getValue( self._physical_quantity_type, other )
-            stor += other
-        elif isCompatibleGridData(self, other):
-            stor += other.storage() * conversion_constant( other.data_pqt(), self.data_pqt() )
-        else:
-            raise NotImplementedError , "%s + %s" % (
-                self.__class__.__name__, other.__class__.__name__)
-        return self
+    def getz(self, *args):
+        indexes = []
+        for arg, axis in zip( args, self.axes() ):
+            checkValue( arg, axis.quantity )
+            indexes.append( axis.index(arg) )
+            continue
+        return self._zs.values[ indexes ]
 
 
-    def __isub__(self, other):
-        if other is None: return self
-        stor = self.storage()
-        if isPhysicalQuantity(other):
-            other = getValue( self._physical_quantity_type, other )
-            stor -= other
-        elif isCompatibleGridData(self, other):
-            stor -= other.storage() * conversion_constant( other.data_pqt(), self.data_pqt() )
-        else:
-            raise NotImplementedError , "%s - %s" % (
-                self.__class__.__name__, other.__class__.__name__)
-        return self
+    def setz(self, *args):
+        coords = args[:-1]
+        new = args[-1]
+        indexes = []
+        for coord, axis in zip( coords, self.axes() ):
+            checkValue( coord, axis.quantity )
+            indexes.append( axis.index(coord) )
+            continue
+        self._zs.values[ indexes ]  = new
+        return
 
 
-    def __imul__(self, other):
-        stor = self.storage()
-        if isNumber(other): stor *= other
-        else:
-            raise NotImplementedError , "%s * %s" % (
-                self.__class__.__name__, other.__class__.__name__)
-        return self
-    
-
-    def __idiv__(self, other):
-        stor = self.storage()
-        if isNumber(other): stor /= other
-        else:
-            raise NotImplementedError , "%s * %s" % (
-                self.__class__.__name__, other.__class__.__name__)
-        return self
-
-
-    def __getitem__(self, s):
+    def getSubGrid(self, *ranges, **kwds):
         """Slicing
-        h[ SlicingInfo( (3.0,4.0) ), all ]
-        h[ 3.0, all ]
-        h[ all, all ]
-        h[ SlicingInfo( (front, 4.0) ), SlicingInfo( (999., back) ) ]
+        gd.getSubGrid( Range( (3.0,4.0) ), all )
+        gd( 3.0, all, newName = "newGridData")
+        gd( all, all )
+        gd( Range( (front, 4.0) ), Range( (999., back) ) )
         """
-        #if isinstance(s, list): s = tuple(s) # expect tuple
-        # force s to be a tuple in case of 1D
-        if self.dimension() == 1:
-            if isSlicingInfo(s): s = (s,)
-            if isPhysicalQuantity(s): s = (s,) 
-        
-        if not (isinstance(s, tuple) and len(s) == self.dimension()):
+        if len(ranges) != self.dimension():
             raise NotImplementedError , "GridData[ %s ]. my dimension: %s" % (
-                s, self.dimension())
+                ranges, self.dimension())
 
-        slicingInfos = s
         axes = self.axes()
-        noslice, newAxes, indexSlices = getAxisSlicesAndIndexSlices( axes, slicingInfos )
+        noslice, newAxes, indexSlices = getAxisSlicesAndIndexSlices( axes, ranges )
 
-        if noslice: return newPQ( self.data_pqt(), self._data[ indexSlices ] )
+        if noslice: raise "%s is not a list of ranges" % (ranges,)
             
-        newData = self._data[ indexSlices ]
+        newZs = self._zs[ indexSlices ]
             
         newMeta = self._meta.copy()
         for newAxis, oldAxis in zip(newAxes, axes):
             if not isAxis( newAxis ): # value
-                newMeta.set( str(oldAxis.physical_quantity_type()),  newAxis)
+                newMeta.set( str(oldAxis.quantity),  newAxis)
                 del newAxes[ newAxes.index( newAxis ) ]
                 pass
             continue
+        newName = kwds.get("newName")
+        if newName is None : newName = "%s in ranges (%s)" % (self.name(), ranges)
 
-        name = "slice %s of %s" % (s, self.name())
-
-        pqt = self._physical_quantity_type
-        new = self.__class__( name, newAxes, pqt, newData, newMeta )
+        new = self.__class__( newName, newAxes, newZs, newMeta )
         return new
-            
 
 
-    def __setitem__(self, s, rhs):
-        #if isinstance(s, list): s = tuple(s) # expect tuple
-        # force s to be a tuple in case of 1D
-        if self.dimension() == 1:
-            if isSlicingInfo(s): s = (s,)
-            if isPhysicalQuantity(s): s = (s,) 
-
-        if not (isinstance(s, tuple) and len(s) == self.dimension()):
-            raise NotImplementedError , "Histogram[ %s ]. my dimension: %s" % (
-                s, self.dimension())
-        slicingInfos = s
+    def setSubGrid(self, *args):
+        ranges = args[:-1]
+        rhs = args[-1]
+        if len(ranges) != self.dimension():
+            raise NotImplementedError , "GridData[ %s ]. my dimension: %s" % (
+                ranges, self.dimension())
         
         axes = self.axes()
-        noslice, newAxes, indexSlices = getAxisSlicesAndIndexSlices( axes, slicingInfos )
+        noslice, newAxes, indexSlices = getAxisSlicesAndIndexSlices( axes, ranges )
 
-        if noslice :
-            if not isPhysicalQuantity(rhs): raise ValueError, \
-               "%s is not a physical quantity" % rhs
-            self._data[ indexSlices ] = getValue( self.data_pqt(), rhs )
-            return rhs
+        if noslice: raise "%s is not a list of ranges" % (ranges,)
 
         if not isGridData(rhs): raise ValueError, \
-           "rhs of setslice must be either a physical quantity or a GridData instance"
+           "rhs of setSubGrid must be either a GridData instance"
         checkAxesCompatibility( rhs.axes(), newAxes )
-        self._data[indexSlices] = rhs.storage() \
-                                  * conversion_constant(rhs.data_pqt(), \
-                                                        self.data_pqt() )
-        return self[ s ]
+        self._zs.values[indexSlices] = rhs._zs.values
+        return
             
 
 
     def copy(self):
         axes = self.axes()
         meta = self._meta.copy()
-        storage = self.storage().copy()
-        pqt = self._physical_quantity_type
+        zs = self.zs().copy()
         
         copy = self.__class__(
-            self.name(), axes, pqt, storage, meta )
+            self.name(), axes, zs, meta )
         return copy
     
 
     def _addAxes(self, axes):
-        for axis in axes: self._verifyAxisType(axis)
+        shape = self._zs.shape()
+        for i,axis in enumerate(axes):
+            self._verifyAxisType(axis)
+            assert len(axis) == shape[i], "axis %s does not match z data" % axis
+            continue
         self._axes = axes
         return
 
@@ -212,8 +168,13 @@ class GridData:
 
 #helpers
 
-from SlicingInfo import isSlicingInfo
+from Range import isRange, Range
 from Axes import getAxisSlicesAndIndexSlices, checkAxesCompatibility
+from AbstractQuantity import checkValue
+from PhysicalQuantity import PhysicalQuantity
+from PhysicalValueList import PhysicalValueList
+from PhysicalValueNdArray import PhysicalValueNdArray
+from PhysicalQuantityValueNdArray import PhysicalQuantityValueNdArray
 
 def isNumber(a):
     return isinstance(a, int) or isinstance(a, float)
@@ -225,8 +186,6 @@ def isAxis(a):
     return isinstance(a, AbstractDiscreteAxis)
 
 
-from PhysicalQuantity import PhysicalQuantity, newType, getValue,\
-     conversion_constant, new as newPQ
 def isPhysicalQuantity( pq ):
     return isinstance( pq, PhysicalQuantity )
 
@@ -243,38 +202,38 @@ def isCompatibleGridData( gd1, gd2 ):
 def isGridData(gd): return isinstance(gd, GridData)
 
 
-from ndarray.NdArray import NdArray
-def isStorage(s): return isinstance(s, NdArray)
-
-
-
 #test case
 import unittest as ut
 
 class TestCase(ut.TestCase):
 
+    from pyre.units.unit import dimensionless
+    
     def setUp(self):
         # overload the following to test a special subclass of GridData
         self.GridData = GridData
         axes = self.createAxes()
-        from PhysicalQuantity import newType
+
+        #phys quant "counts"
+        from PhysicalQuantity import PhysicalQuantity
         from pyre.units.unit import dimensionless
-        self.Counts = newType( "counts", dimensionless )
+        self.Counts = PhysicalQuantity( "counts", dimensionless )
+        
         self.griddata = self.createGridData(axes)
         self.griddata2 = self.createGridData2(axes)
         return
 
 
     def createAxes(self):
-        from GenuineDiscreteAxis import GenuineDiscreteAxis
-        from PhysicalQuantity import newType
-        from pyre.units.unit import dimensionless
+        from GenuineDiscreteAxis import createGenuineDiscreteAxis
+        from PhysicalQuantity import PhysicalQuantity
+        from ID import ID
         
-        DetID = newType( "detector ID", dimensionless )
-        detAxis = GenuineDiscreteAxis( DetID, range(10) )
+        DetID = ID( "detector ID" )
+        detAxis = createGenuineDiscreteAxis( DetID, range(10) )
 
-        PixID = newType( "pixel ID", dimensionless )
-        pixAxis = GenuineDiscreteAxis( PixID, range(10) )
+        PixID = ID( "pixel ID" )
+        pixAxis = createGenuineDiscreteAxis( PixID, range(10) )
 
         self.DetID = DetID
         self.PixID = PixID
@@ -284,35 +243,47 @@ class TestCase(ut.TestCase):
         return axes
 
 
+    def createZs(self):
+        from ndarray.NumpyNdArray import NdArray
+        numbers = NdArray( 'double', range(100) )
+        numbers.setShape( (10,10) )
+        
+        pvl = PhysicalValueNdArray( self.dimensionless, numbers )
+
+        return PhysicalQuantityValueNdArray( self.Counts, pvl)
+
+
+    def createZs2(self):
+        from ndarray.NumpyNdArray import NdArray
+        numbers = NdArray( 'double', [0]*100 )
+        numbers.setShape( (10,10) )
+        
+        pvl = PhysicalValueNdArray( self.dimensionless, numbers )
+
+        return PhysicalQuantityValueNdArray( self.Counts, pvl)
+
+
     def createGridData(self, axes):
         #overload this method to create special griddata instance
         #name must be "name"
-        from ndarray.NumpyNdArray import NdArray
-        data = NdArray( 'double', range(100) )
-        data.setShape( (10,10) )
-
-        return self.GridData( "name", axes, self.Counts, data )
-
+        return self.GridData( "name", axes, self.createZs() )
+        
 
     def createGridData2(self, axes):
         #overload this method to create special griddata instance
         #name must be "gd2"
-        from ndarray.NumpyNdArray import NdArray
-        data = NdArray( 'double', range(100) )
-        data[:] = 0.
-        data.setShape( (10,10) )
-        return self.GridData( "gd2", axes, self.Counts, data )
+        return self.GridData( "gd2", axes, self.createZs2() )
 
 
     def test_ctor(self):
         "GridData: ctor"
         gd = self.griddata
         axes = gd.axes()
-        data = gd.storage()
+        zs = gd.zs()
 
         from AttributeDictionary import AttributeDictionary
         meta = AttributeDictionary( )
-        self.GridData( "name", axes, data, meta )
+        self.GridData( "name", axes, zs, meta )
         return
 
 
@@ -326,10 +297,10 @@ class TestCase(ut.TestCase):
         return
 
 
-    def test_storage(self):
-        "GridData: storage"
+    def test_zs(self):
+        "GridData: zs"
         gd = self.griddata
-        data = gd.storage()
+        data = gd.zs()
         return
 
 
@@ -358,209 +329,89 @@ class TestCase(ut.TestCase):
         return
 
 
-    def test__iadd1__(self):
-        "GridData: gd+=<physical quantity>"
-        from PhysicalQuantity import new
-        
-        gd = self.griddata.copy()
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        
-        gd += new( self.Counts, 10 )
-        
-        for i in range(10):
-            for j in range(10):
-                self.assertEqual( gd[new(DetID, i), new(PixID, j)], new(Counts, 10.+10*i+j) )
-        return
-    
-    
-    def test__iadd2__(self):
-        "GridData: gd+=gd2"
-        from PhysicalQuantity import new
-        
-        gd = self.griddata.copy()
-        gd2 = self.griddata2.copy()
-
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        gd2[new(DetID,3), new(PixID, 4)] = new(Counts, 10.)
-
-        gd += gd2
-        self.assertEqual( gd[new(DetID, 3), new(PixID, 4)], new(Counts, 44.) )
-        self.assertEqual( gd[new(DetID, 5), new(PixID, 6)], new(Counts, 56.) )
-        return
-    
-    
-    def test__iadd__setitem__(self):
-        "GridData: gd[ ? ]+=<physical quantity>"
-        from PhysicalQuantity import new
-        
-        gd = self.griddata.copy()
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        self.assertEqual( gd[new(DetID, 3), new(PixID, 4)], new(Counts, 34.) )
-        gd[new(DetID, 3), new(PixID, 4)] += new(Counts, 10. )
-        self.assertEqual( gd[new(DetID, 3), new(PixID, 4)], new(Counts, 44.) )
-        return
-    
-    
-    def test__isub1__(self):
-        "GridData: gd-=<physical quantity>"
-        from PhysicalQuantity import new
-        
-        gd = self.griddata.copy()
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        gd -= new(Counts, 10)
-        self.assertEqual( gd[new(DetID, 3), new(PixID, 4)], new(Counts, 24.) )
-        return
-    
-    
-    def test__isub2__(self):
-        "GridData: gd-=gd2"
-        from PhysicalQuantity import new
-        
-        gd = self.griddata.copy()
-        gd2 = self.griddata2.copy()
-
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        gd2[new(DetID,3), new(PixID, 4)] = new(Counts, 10.)
-
-        gd -= gd2
-        self.assertEqual( gd[new(DetID, 3), new(PixID, 4)], new(Counts, 24.) )
-        self.assertEqual( gd[new(DetID, 5), new(PixID, 6)], new(Counts, 56.) )
-        return
-    
-    
-    def test__imul__(self):
-        "GridData: gd*=<number>"
-        from PhysicalQuantity import new
-        
-        gd = self.griddata.copy()
-        gd *= 2.
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        self.assertEqual( gd[new(DetID,3), new(PixID, 4)], new(Counts, 68.) )
-        return
-    
-    
-    def test__idiv__(self):
-        "GridData: gd/=<number>"
-        from PhysicalQuantity import new
-        
-        gd = self.griddata.copy()
-        gd /= 2.
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        self.assertEqual( gd[new(DetID,3), new(PixID, 4)], new(Counts, 17.) )
-        return
-
-
-    def test__getitem__1(self):
-        "GridData: gd[ phys_quant1, phys_quant2 ]"
-        from PhysicalQuantity import new
-        
+    def test_getz(self):
+        "GridData: getz( x, y )"
         gd = self.griddata
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-
-        self.assertEqual( gd[new(DetID, 3), new(PixID, 4)], new(Counts, 34.) )
+        self.assertEqual( gd.getz( 3, 4 ), 34.*self.dimensionless )
         return
 
 
-    def test__getitem__2(self):
-        "GridData: gd[ slicing, phys_quant2 ]"
-        from PhysicalQuantity import new
-        from SlicingInfo import SlicingInfo
-        
+    def test_setz(self):
+        "GridData: setz( x, y, newz )"
         gd = self.griddata
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        
-        detID_slice = SlicingInfo( new(DetID, 3), new(DetID, 7) )
-        pixID = new(PixID, 4)
+        gd.setz( 3, 4, 99.*self.dimensionless )
+        self.assertEqual( gd.getz( 3, 4 ), 99.*self.dimensionless )
+        return
 
-        gds = gd[ detID_slice, pixID ]
+
+    def test_getSubGrid1(self):
+        "GridData: getSubGrid( range, value )"
+        gd = self.griddata
+
+        subgd = gd.getSubGrid( Range(3,7), 4 )
         
-        self.assertEqual( gds[new(DetID, 5)], new(Counts, 54.) )
-        newShape = gds.shape()
+        self.assertEqual( subgd.getz(5),  54.*self.dimensionless )
+        newShape = subgd.shape()
         self.assertEqual( len(newShape), 1 )
         self.assertEqual( newShape[0], 5 )
         return
 
 
-    def test__getitem__3(self):
-        "GridData: gd[ slicing, slicing ]"
-        from PhysicalQuantity import new
-        from SlicingInfo import SlicingInfo
-        
+    def test_getSubGrid2(self):
+        "GridData: getSubGrid( range, range )"
         gd = self.griddata
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        
-        detID_slice = SlicingInfo( new(DetID, 3), new(DetID, 7) )
-        pixID_slice = SlicingInfo( new(PixID, 2), new(PixID, 8) )
 
-        gds = gd[ detID_slice, pixID_slice ]
+        subgd = gd.getSubGrid( Range(3,7), Range(2,8) )
         
-        self.assertEqual( gds[new(DetID, 5), new(PixID, 4)], new(Counts, 54.) )
-        newShape = gds.shape()
+        self.assertEqual( subgd.getz(5,4),  54.*self.dimensionless )
+        newShape = subgd.shape()
         self.assertEqual( len(newShape), 2 )
         self.assertEqual( newShape[0], 5 )
         self.assertEqual( newShape[1], 7 )
         return
 
 
-    def test__setitem__1(self):
-        "GridData: gd[ phys_quant1, phys_quant2 ] = value"
-        from PhysicalQuantity import new
-        
+    def test_setSubGrid1(self):
+        "GridData: setSubGrid( range, value, newGrid )"
         gd = self.griddata.copy()
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        detID = new(DetID, 3); pixID = new(PixID, 4)
-
-        gd[detID, pixID] = counts = new( Counts, 999 )
-        self.assertEqual( gd[detID, pixID], counts )
-        return
-
-
-    def test__setitem__2(self):
-        "GridData: gd[ slicing, phys_quant2 ] = another grid data"
-        from PhysicalQuantity import new
-        from SlicingInfo import SlicingInfo
-        
-        gd = self.griddata.copy()
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        
-        detID_slice = SlicingInfo( new(DetID, 3), new(DetID, 7) )
-        pixID = new(PixID, 4)
 
         from ndarray.NumpyNdArray import NdArray
-        newValues = NdArray( 'double', range(5) )
+        newNumbers = NdArray( 'double', range(5) )
+        pvl = PhysicalValueNdArray( self.dimensionless, newNumbers )
+        newZs = PhysicalQuantityValueNdArray( self.Counts, pvl)
 
-        detAxis1 = self.detAxis[ detID_slice ]
-        rhs = self.GridData( "c_det", [detAxis1], Counts, newValues )
+        detAxis1 = self.detAxis[ Range(3,7) ]
+        rhs = self.GridData( "c_det", [detAxis1], newZs )
         
-        gd[ detID_slice, pixID ] = rhs
+        gd.setSubGrid( Range(3,7), 4, rhs )
         
-        self.assertEqual( gd[new(DetID, 5), pixID], new(Counts, 2.) )
+        self.assertEqual( gd.getz( 5,4 ), 2.*self.dimensionless)
         return
 
 
-    def test__setitem__3(self):
-        "GridData: gd[ slicing, slicing ] = NdArray instance"
-        from PhysicalQuantity import new
-        from SlicingInfo import SlicingInfo
+##     def test__setitem__3(self):
+##         "GridData: gd[ slicing, slicing ] = NdArray instance"
+##         from PhysicalQuantity import new
+##         from Range import Range
         
-        gd = self.griddata.copy()
-        DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
+##         gd = self.griddata.copy()
+##         DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
         
-        detID_slice = SlicingInfo( new(DetID, 3), new(DetID, 7) )
-        pixID_slice = SlicingInfo( new(PixID, 2), new(PixID, 8) )
+##         detID_slice = Range( new(DetID, 3), new(DetID, 7) )
+##         pixID_slice = Range( new(PixID, 2), new(PixID, 8) )
 
-        from ndarray.NumpyNdArray import NdArray
-        newValues = NdArray( 'double', range(5*7) )
-        newValues.setShape( (5,7) )
+##         from ndarray.NumpyNdArray import NdArray
+##         newValues = NdArray( 'double', range(5*7) )
+##         newValues.setShape( (5,7) )
 
-        detAxis1  = self.detAxis[ detID_slice ]
-        pixAxis1  = self.pixAxis[ pixID_slice ]
-        rhs = self.GridData( "c_detpix", [detAxis1, pixAxis1], Counts, newValues )
+##         detAxis1  = self.detAxis[ detID_slice ]
+##         pixAxis1  = self.pixAxis[ pixID_slice ]
+##         rhs = self.GridData( "c_detpix", [detAxis1, pixAxis1], Counts, newValues )
 
-        gd[ detID_slice, pixID_slice ] = rhs
+##         gd[ detID_slice, pixID_slice ] = rhs
         
-        self.assertEqual( gd[new(DetID, 5), new(PixID, 4)], new(Counts, 16.) )
-        return
+##         self.assertEqual( gd[new(DetID, 5), new(PixID, 4)], new(Counts, 16.) )
+##         return
 
 
     pass
