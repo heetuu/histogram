@@ -23,45 +23,46 @@ from AbstractDiscreteAxis import AbstractDiscreteAxis
 
 class DiscretizedAxis(AbstractDiscreteAxis):
 
-    def __init__(self, physical_quantity_type, values):
-        AbstractDiscreteAxis.__init__(self, physical_quantity_type)
-        self._values = values
+
+    def __init__(self, quantityValueList):
+        values = quantityValueList.values
+        if not isPhysicalValueList( values ): raise ValueError, \
+           "DiscretizedAxis requires a value list of a physical quantity. " \
+           "%s is not."% (values,)
+        AbstractDiscreteAxis.__init__(self, quantityValueList)
         return
-
-
-    def values(self): return self._values
-
+    
 
     def __getitem__(self, s):
         if not isSlicingInfo(s): raise NotImplementedError , \
-           "cannot get slice (%s)" % s
+           "cannot get slice (%s) of axis (%s)" % (s, self)
         s = self.slicingInfo2IndexSlice( s )
-        newValues = self._values[s]
-        return DiscretizedAxis( self._physical_quantity_type, newValues )
-
-
-    def _index(self, value):
-        if value in self._values: return self._values.index( value )
-        else: raise IndexError , "unable to find index for %s" % value
-
+        newValues = self.values()[s]
+        return DiscretizedAxis( QuantityValueList( self._quantity, newValues ) )
 
     pass # end of DiscretizedAxis
     
 
 from SlicingInfo import isSlicingInfo
+from PhysicalValueList import isPhysicalValueList, PhysicalValueList
+from QuantityValueList import QuantityValueList
+
 
 
 def test():
-    from PhysicalQuantity import newType, new
     from pyre.units.energy import eV
-    Ee = newType( "electron energy", eV )
+    from PhysicalQuantity import PhysicalQuantity
+    
+    Ee = PhysicalQuantity( "electron energy", eV )
 
     from AbstractDiscreteAxis import TestCase as TC
 
     class TestCase(TC):
 
         def setUp(self):
-            self.axis = DiscretizedAxis( Ee, [-5.0, -4.0, -3.0] )
+            energyValueList = PhysicalValueList( eV,  [-8., -7., -6., -5.0, -4.0, -3.0] )
+            EeValueList = QuantityValueList( Ee, energyValueList )
+            self.axis = DiscretizedAxis( EeValueList )
             return
 
 
@@ -73,11 +74,10 @@ def test():
 
         def test_index(self):
             "DiscretizedAxis: index"
-            from PhysicalQuantity import new
             axis = self.axis
-            self.assertEqual( axis.index( new(Ee, -5.0 ) ), 0 )
-            self.assertEqual( axis.index( new(Ee, -4.0 ) ), 1 )
-            self.assertRaises( IndexError, axis.index, new(Ee, -2.0 ) )
+            self.assertEqual( axis.index( -5.0*eV ), 3 )
+            self.assertEqual( axis.index( -4.0*eV ), 4 )
+            self.assertRaises( ValueError, axis.index, -2.0*eV )
             return
 
 
@@ -86,7 +86,7 @@ def test():
             axis = self.axis
             import copy
             vs = copy.deepcopy( axis.values() )
-            axis1 = DiscretizedAxis( Ee, vs )
+            axis1 = DiscretizedAxis( QuantityValueList( Ee, vs ) )
             self.assertEqual( axis, axis1 )
             return
         
@@ -96,9 +96,10 @@ def test():
             axis = self.axis
             import copy
             vs = copy.deepcopy( axis.values() )
-            axis1 = DiscretizedAxis( Ee, vs )
+            axis1 = DiscretizedAxis( QuantityValueList( Ee, vs ) )
             self.assertEqual( axis != axis1, False)
-
+            return
+        
         pass
 
     import unittest as ut

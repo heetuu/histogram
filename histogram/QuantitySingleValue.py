@@ -11,9 +11,23 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
+
+class QuantitySingleValue:
+
+    def __init__(self, quantity, value):
+        if not isQuantity(quantity):
+            raise ValueError, "%s is not a quantity"% quantity
+
+        checkValue( value, quantity )
+        self.quantity = quantity
+        return
+
+    pass # end of QuantitySingleValue
+
+
+from AbstractQuantity import isQuantity, checkValue
+
 # version
 __id__ = "$Id$"
-
-# Generated automatically by PythonMill on Tue Dec 26 15:20:01 2006
 
 # End of file 

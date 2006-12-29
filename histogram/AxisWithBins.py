@@ -16,10 +16,15 @@ from DiscretizedAxis import DiscretizedAxis
 
 class AxisWithBins(DiscretizedAxis):
 
-    def __init__(self, physical_quantity_type, binBoundaries, binCenters = None):
-        self._binBoundaries = binBoundaries
-        if binCenters is None: binCenters = _calcBinCenters( binBoundaries )
-        DiscretizedAxis.__init__(self, physical_quantity_type, binCenters)
+    def __init__(self, quantity_binBoundaries):
+        """ctor
+        binBoundaries: bin boundaries. instance of PhysicalValueList
+        """
+        qbb = quantity_binBoundaries
+        binBoundaries = self._binBoundaries = qbb.values
+        self._binCenters = binCenters = _calcBinCenters( binBoundaries )
+        qbc = QuantityValueList( qbb.quantity, binCenters )
+        DiscretizedAxis.__init__(self, qbc)
         return
 
 
@@ -32,12 +37,11 @@ class AxisWithBins(DiscretizedAxis):
         if step is None: step = 1
         #
         newBBs= self._binBoundaries [ slice(s.start, s.stop + step, step) ]
-        newBCs = self._values[s]
-        return AxisWithBins( self._physical_quantity_type, newBBs,
-                             binCenters = newBCs )
+        newqBBs = QuantityValueList( self.quantity(), newBBs )
+        return AxisWithBins( newqBBs )
 
 
-    def binCenters(self): return self.values()
+    def binCenters(self): return self._binCenters
 
 
     def binBoundaries(self): return self._binBoundaries
@@ -46,41 +50,77 @@ class AxisWithBins(DiscretizedAxis):
 
 
 def _calcBinCenters( bbs ):
-    return [ (bbs[i] + bbs[i+1])/2. for i in range( len(bbs) -1 ) ]
+    unit = bbs.unit()
+    bbvs = bbs.values()
+    bcvs = [ (bbvs[i] + bbvs[i+1])/2. for i in range( len(bbvs) -1 ) ]
+    return PhysicalValueList( unit, bcvs )
 
 
 from SlicingInfo import isSlicingInfo
+from QuantityValueList import QuantityValueList
+from PhysicalValueList import PhysicalValueList
 
 
 def test():
-    from PhysicalQuantity import newType, new
+    from PhysicalQuantity import PhysicalQuantity
     from pyre.units.energy import eV
-    Ee = newType( "electron energy", eV )
+    Ee = PhysicalQuantity( "electron energy", eV )
 
     from AbstractDiscreteAxis import TestCase as TC
 
     class TestCase(TC):
 
         def setUp(self):
-            self.axis = AxisWithBins( Ee, [-5.5, -4.5, -3.5, -2.5] )
+            energyValueList = PhysicalValueList(
+                eV,  [-8.5, -7.5, -6.5, -5.5, -4.5, -3.5, -2.5] )
+            EeValueList = QuantityValueList( Ee, energyValueList )
+            self.axis = AxisWithBins( EeValueList )
+            return
+
+
+        def test_binCenters(self):
+            "AxisWithBins: binCenters"
+            bc = self.axis.binCenters()
+            self.assertEqual( bc.__class__, PhysicalValueList )
+            self.assertEqual( bc, PhysicalValueList(
+                eV,  [-8., -7., -6., -5., -4., -3.] ) )
             return
 
 
         def test_values(self):
-            "DiscretizedAxis: values"
+            "AxisWithBins: values"
             TC.test_values(self)
             return
 
 
         def test_index(self):
-            "DiscretizedAxis: index"
-            from PhysicalQuantity import new
+            "AxisWithBins: index"
             axis = self.axis
-            self.assertEqual( axis.index( new(Ee, -5.0 ) ), 0 )
-            self.assertEqual( axis.index( new(Ee, -4.0 ) ), 1 )
-            self.assertRaises( IndexError, axis.index, new(Ee, -2.0 ) )
+            self.assertEqual( axis.index( -5.0*eV ), 3 )
+            self.assertEqual( axis.index( -4.0*eV ), 4 )
+            self.assertRaises( ValueError, axis.index, -2.0*eV )
             return
 
+
+        def test___eq__(self):
+            "AxisWithBins: a == b"
+            axis = self.axis
+            import copy
+            vs = copy.deepcopy( axis.binBoundaries() )
+            axis1 = AxisWithBins( QuantityValueList( Ee, vs ) )
+            self.assertEqual( axis, axis1 )
+            return
+        
+
+        def test___ne__(self):
+            "AxisWithBins: a != b"
+            axis = self.axis
+            import copy
+            vs = copy.deepcopy( axis.binBoundaries() )
+            axis1 = AxisWithBins( QuantityValueList( Ee, vs ) )
+            self.assertEqual( axis != axis1, False)
+            return
+        
         pass
 
     import unittest as ut

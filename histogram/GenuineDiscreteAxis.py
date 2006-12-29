@@ -16,45 +16,40 @@ from AbstractDiscreteAxis import AbstractDiscreteAxis
 
 class GenuineDiscreteAxis(AbstractDiscreteAxis):
 
-    def __init__(self, physical_quantity_type, values):
-        AbstractDiscreteAxis.__init__(self, physical_quantity_type)
-        self._values = values
+    def __init__(self, quantityValueList):
+        AbstractDiscreteAxis.__init__(self, quantityValueList)
         return
-
-
-    def values(self): return self._values
-
+    
 
     def __getitem__(self, s):
         if not isSlicingInfo(s): raise NotImplementedError , \
-           "cannot get slice (%s)" % s
+           "cannot get slice (%s) of axis (%s)" % (s, self)
         s = self.slicingInfo2IndexSlice( s )
-        newValues = self._values[s]
-        return GenuineDiscreteAxis( self._physical_quantity_type, newValues )
-
-
-    def _index(self, value):
-        if value in self._values: return self._values.index( value )
-        else: raise IndexError , "unable to find index for %s" % value
-
+        newValues = self.values()[s]
+        return GenuineDiscreteAxis( QuantityValueList( self._quantity, newValues ) )
 
     pass # end of GenuineDiscreteAxis
 
 
 from SlicingInfo import isSlicingInfo
+from QuantityValueList import QuantityValueList
     
 
 def test():
-    from PhysicalQuantity import newType, new
     from pyre.units.energy import eV
-    Eb = newType( "bound state electron energy", eV )
+    from PhysicalQuantity import PhysicalQuantity
+    from PhysicalValueList import PhysicalValueList
+    
+    Eb = PhysicalQuantity( "bound state electron energy", eV )
 
     from AbstractDiscreteAxis import TestCase as TC
 
     class TestCase(TC):
 
         def setUp(self):
-            self.axis = GenuineDiscreteAxis( Eb, [-5.0, -4.0, -3.0] )
+            energyValueList = PhysicalValueList( eV,  [-8., -7., -6., -5.0, -4.0, -3.0] )
+            EbValueList = QuantityValueList( Eb, energyValueList )
+            self.axis = GenuineDiscreteAxis( EbValueList )
             return
 
 
@@ -66,11 +61,10 @@ def test():
 
         def test_index(self):
             "GenuineDiscreteAxis: index"
-            from PhysicalQuantity import new
             axis = self.axis
-            self.assertEqual( axis.index( new(Eb, -5.0 ) ), 0 )
-            self.assertEqual( axis.index( new(Eb, -4.0 ) ), 1 )
-            self.assertRaises( IndexError, axis.index, new(Eb, -2.0 ) )
+            self.assertEqual( axis.index( -5.0*eV ), 3 )
+            self.assertEqual( axis.index( -4.0*eV ), 4 )
+            self.assertRaises( ValueError, axis.index, -2.0*eV )
             return
 
 
@@ -79,7 +73,7 @@ def test():
             axis = self.axis
             import copy
             vs = copy.deepcopy( axis.values() )
-            axis1 = GenuineDiscreteAxis( Eb, vs )
+            axis1 = GenuineDiscreteAxis( QuantityValueList( Eb, vs ) )
             self.assertEqual( axis, axis1 )
             return
         
@@ -89,8 +83,9 @@ def test():
             axis = self.axis
             import copy
             vs = copy.deepcopy( axis.values() )
-            axis1 = GenuineDiscreteAxis( Eb, vs )
+            axis1 = GenuineDiscreteAxis( QuantityValueList( Eb, vs ) )
             self.assertEqual( axis != axis1, False)
+            return
 
         pass
 

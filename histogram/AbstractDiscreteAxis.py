@@ -15,52 +15,45 @@
 class AbstractDiscreteAxis:
 
 
-    def __init__(self, physical_quantity_type ):
-        self._physical_quantity_type = physical_quantity_type
+    def __init__(self, quantityValueList ):
+        self._qvList = quantityValueList
+        self._quantity = quantityValueList.quantity
+        self._values = quantityValueList.values
+        assert len(quantityValueList) > 2, "an axis must have at least 3 ticks"
         return
 
 
-    def physical_quantity_type(self): return self._physical_quantity_type
-
-
-    def physical_quantities(self):
-        pqt = self._physical_quantity_type
-        from PhysicalQuantity import new
-        return [ new(pqt, v) for v in self.values() ]
-
-
-    def index(self, physical_quantity):
-        value = self._getValue( physical_quantity )
-        return self._index( value )
-
-
-    def slicingInfo2IndexSlice(self, slicingInfo):
-        """slicingInfo2Range(slicingInfo) --> slice instance
-        note: slicing is inclusive
-        """
-        startPQ, endPQ = slicingInfo.start, slicingInfo.end
-        start = self._getValue( startPQ )
-        end = self._getValue( endPQ )
-        values = self.values()
-        if start == front: start = values[0]
-        if end == back: end = values[-1]
-        #slice. +1 to make the end bracket inclusive
-        s = ( self._index( start ), self._index( end ) + 1 )
-        return slice( *s )
+    def quantity(self): return self._quantity
 
 
     def values(self):
-        raise NotImplementedError
+        "return values of 'ticks'"
+        return self._values
+
+
+    def index(self, value):
+        """return index of value in the 'ticks'
+        overload this method to provide more complex behavior
+        """
+        return self._values.index( value )
+
+
+    def slicingInfo2IndexSlice(self, slicingInfo):
+        """slicingInfo2IndexSlice(slicingInfo) --> slice instance
+        note: slicing is inclusive
+        """
+        start, end = slicingInfo.start, slicingInfo.end
+        values = self._values
+        if start == front: start = values[0]
+        if end == back: end = values[-1]
+        #slice. +1 to make the end bracket inclusive
+        s = self.index( start ), self.index( end ) + 1
+        return slice( *s )
 
 
     def __eq__(self, rhs):
         if not isinstance(rhs, AbstractDiscreteAxis): return False
-        try: self._physical_quantity_type.checkCompatibility( rhs._physical_quantity_type )
-        except: return False
-        for pq1, pq2 in zip(self.physical_quantities(), rhs.physical_quantities()):
-            if pq1 != pq2 : return False
-            continue
-        return True
+        return self._qvList == rhs._qvList
     
     
     def __ne__(self, rhs):
@@ -70,15 +63,12 @@ class AbstractDiscreteAxis:
     def __getitem__(self, s):
         raise NotImplementedError
 
+
+    def __str__(self):
+        vs = self.values()
+        return "%s: [%s, %s, ..., %s]" % (
+            self._quantity, vs[0], vs[1], vs[-1] )
         
-    def _index(self, value):
-        raise NotImplementedError
-
-
-    def _getValue(self, physical_quantity):
-        from PhysicalQuantity import getValue
-        return getValue(self._physical_quantity_type, physical_quantity )
-
     pass
 
 
@@ -97,6 +87,13 @@ class TestCase(ut.TestCase):
         return
 
 
+    def test_quantity(self):
+        "DiscreteAxis: quantity"
+        axis = self.axis
+        axis.quantity()
+        return
+
+
     def test_values(self):
         "DiscreteAxis: values"
         axis = self.axis
@@ -108,29 +105,25 @@ class TestCase(ut.TestCase):
         "DiscreteAxis: slicinginfo2indexslice"
         axis = self.axis
         values = axis.values()
-        tp = self.axis.physical_quantity_type()
-        from PhysicalQuantity import new
-        q1 = new(tp, values[0] )
-        q2 = new(tp, values[-2] )
+        v1 = values[0] 
+        v2 = values[-2] 
         from SlicingInfo import SlicingInfo
-        si = SlicingInfo( q1, q2 )
+        si = SlicingInfo( v1, v2 )
         s = axis.slicingInfo2IndexSlice( si )
         self.assertEqual( s, slice(0, len(values)-1) )
         return
 
 
-    def test_getitem(self):
+    def test___getitem__(self):
         "DiscreteAxis: __getitem__"
         axis = self.axis
         values = axis.values()
-        tp = self.axis.physical_quantity_type()
-        from PhysicalQuantity import new
-        q1 = new(tp, values[0] )
-        q2 = new(tp, values[-2] )
+        v1 = values[0] 
+        v2 = values[-2] 
         from SlicingInfo import SlicingInfo
-        si = SlicingInfo( q1, q2 )
+        si = SlicingInfo( v1, v2 )
         newAxis = axis[ si ]
-        self.assertEqual( axis.physical_quantity_type(), newAxis.physical_quantity_type() )
+        self.assertEqual( axis.quantity(), newAxis.quantity() )
         self.assertEqual( len(newAxis.values() ), len(values) - 1 )
         return
     

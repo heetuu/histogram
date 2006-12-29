@@ -12,71 +12,43 @@
 #
 
 
+from AbstractQuantity import AbstractQuantity
+
 ## Class that represents a physical quantity
 
-class PhysicalQuantity:
+class PhysicalQuantity(AbstractQuantity):
 
-    def __init__(self, value, type):
-        self.value = value
-        self.type = type
+    def __init__(self, name, unit):
+        """new physical quantity
+
+        name: name of physical quantity
+        unit: unit of physical quantity. instance of pyre.units.unit
+        """
+        AbstractQuantity.__init__(self, name)
+        self.unit = unit
         return
     
 
-    def __eq__(self, rhs):
-        try: self.type.checkCompatibility( rhs.type )
+    def isAcceptable(self, value):
+        "check if the given value is acceptable for this quantity"
+        try: value + self.unit
         except: return False
-        return rhs.value*rhs.type.unit == self.value*self.type.unit
+        return True
+
+
+    def __eq__(self, rhs):
+        if not isPhysicalQuantity(rhs): return False
+        if self.name != rhs.name: return False
+        return self.isAcceptable( rhs.unit )
 
 
     def __ne__(self, rhs):
-        try: self.type.checkCompatibility( rhs.type )
-        except: return True
-        return rhs.value*rhs.type.unit != self.value*self.type.unit
-
-
-    def __iadd__(self, rhs):
-        if not isPhysicalQuantity( rhs ): raise ValueError, \
-           "%s is not a physical quantity" % rhs
-        self.type.checkCompatibility( rhs.type )
-        self.value += getValue(self.type, rhs)
-        return self
-    
-
-    def __isub__(self, rhs):
-        if not isPhysicalQuantity( rhs ): raise ValueError, \
-           "%s is not a physical quantity" % rhs
-        self.type.checkCompatibility( rhs.type )
-        self.value -= getValue(self.type, rhs)
-        return self
-    
-
-    def __str__(self):
-        return "%s = %s" % (self.type, self.value)
+        return not (self==rhs)
 
     pass # end of PhysicalQuantity
 
 
-from PhysicalQuantityType import PhysicalQuantityType
-
-def newType( name, unit ): return PhysicalQuantityType( name, unit )
-
-def new( type, value ): return PhysicalQuantity( value, type )
-
-
-def getValue(mytype, physical_quantity):
-    physical_quantity.type.checkCompatibility( mytype )
-    value = physical_quantity.value * physical_quantity.type.unit/mytype.unit
-    return value
-
-
-def conversion_constant( type1, type2 ):
-    """factor to convert value in type1 to value in type2
-
-    v1 * unit1 = v2 * unit2
-    v2 = v1 * unit1/unit2
-    """
-    type1.checkCompatibility( type2 )
-    return type1.unit/type2.unit
+def isPhysicalQuantity( candidate ): return isinstance( candidate, PhysicalQuantity )
 
 
 # version
