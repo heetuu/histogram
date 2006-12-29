@@ -15,7 +15,7 @@
 
 from GridData import GridData
 
-class _GridData(GridData):
+class DataOnCells(GridData):
     from AxisWithBins import AxisWithBins
     from GenuineDiscreteAxis import GenuineDiscreteAxis
     allowed_axis_types = [AxisWithBins, GenuineDiscreteAxis]
@@ -23,12 +23,8 @@ class _GridData(GridData):
 
 
 
-class PhysicalFunctorIntegrationOnCells:
+def isDataOnCells(candidate): return isinstance( candidate, DataOnCells )
 
-    def __init__(self, name,
-    
-    pass
-    
 
 # version
 __id__ = "$Id$"

@@ -131,7 +131,7 @@ class GridData:
         if noslice: raise "%s is not a list of ranges" % (ranges,)
 
         if not isGridData(rhs): raise ValueError, \
-           "rhs of setSubGrid must be either a GridData instance"
+           "rhs of setSubGrid must be a GridData instance"
         checkAxesCompatibility( rhs.axes(), newAxes )
         self._zs.values[indexSlices] = rhs._zs.values
         return
@@ -338,7 +338,7 @@ class TestCase(ut.TestCase):
 
     def test_setz(self):
         "GridData: setz( x, y, newz )"
-        gd = self.griddata
+        gd = self.griddata.copy()
         gd.setz( 3, 4, 99.*self.dimensionless )
         self.assertEqual( gd.getz( 3, 4 ), 99.*self.dimensionless )
         return
@@ -389,29 +389,24 @@ class TestCase(ut.TestCase):
         return
 
 
-##     def test__setitem__3(self):
-##         "GridData: gd[ slicing, slicing ] = NdArray instance"
-##         from PhysicalQuantity import new
-##         from Range import Range
-        
-##         gd = self.griddata.copy()
-##         DetID = self.DetID; PixID = self.PixID; Counts = self.Counts
-        
-##         detID_slice = Range( new(DetID, 3), new(DetID, 7) )
-##         pixID_slice = Range( new(PixID, 2), new(PixID, 8) )
+    def test_setSubGrid2(self):
+        "GridData: setSubGrid( range, range, newGrid )"
+        gd = self.griddata.copy()
 
-##         from ndarray.NumpyNdArray import NdArray
-##         newValues = NdArray( 'double', range(5*7) )
-##         newValues.setShape( (5,7) )
+        from ndarray.NumpyNdArray import NdArray
+        newNumbers = NdArray( 'double', range(5*7) )
+        newNumbers.setShape( (5,7) )
+        pvl = PhysicalValueNdArray( self.dimensionless, newNumbers )
+        newZs = PhysicalQuantityValueNdArray( self.Counts, pvl)
 
-##         detAxis1  = self.detAxis[ detID_slice ]
-##         pixAxis1  = self.pixAxis[ pixID_slice ]
-##         rhs = self.GridData( "c_detpix", [detAxis1, pixAxis1], Counts, newValues )
+        detAxis1  = self.detAxis[ Range(3,7) ]
+        pixAxis1  = self.pixAxis[ Range(2,8) ]
+        rhs = self.GridData( "c_detpix", [detAxis1, pixAxis1], newZs)
 
-##         gd[ detID_slice, pixID_slice ] = rhs
+        gd.setSubGrid( Range(3,7), Range(2,8), rhs )
         
-##         self.assertEqual( gd[new(DetID, 5), new(PixID, 4)], new(Counts, 16.) )
-##         return
+        self.assertEqual( gd.getz( 5,4 ), 16.*self.dimensionless )
+        return
 
 
     pass
