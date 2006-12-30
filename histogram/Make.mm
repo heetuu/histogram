@@ -17,6 +17,8 @@ PACKAGE = histogram
 # directory structure
 
 BUILD_DIRS = \
+  docs \
+  ndarray \
 
 OTHER_DIRS = \
 

@@ -134,19 +134,19 @@ h3 = h1 - h2
 Slicing:
 \layout LyX-Code
 
-sh1 = h[SlicingInfo( (1.5, 3.5) )]
+sh1 = h.getSubHist( Range(1.5, 3.5) )
 \layout LyX-Code
 
-sh2 = h[SlicingInfo( (1, 3.5) ), 10.0]
+sh2 = h.getSubHist( Range(1, 3.5), 10.0 )
 \layout Paragraph
 
 Acessing data:
 \layout LyX-Code
 
-datastorage = h.data().storage() # an NdArray instance
+datastorage = h.data().zs().values.numbers # an NdArray instance
 \layout LyX-Code
 
-errsstorage = h.errors().storage() # an NdArray instance
+errsstorage = h.errors().zs().values.numbers # an NdArray instance
 \layout Standard
 
 
@@ -298,26 +298,9 @@ Let us rethink this break-down a little bit more to see if it is reasonable.
  mechanisms to this data structure, because all of them are needed by histogram,
  and they certainly can be useful for other applications.
  The remained data structure, Axis, deserves more thoughts.
- Axis is the thing that brings physical meaning to histogram.
- Up to this point, we think of an axis as a mapping from bins to indexes.
- But if we think about Axis without the context of 
-\begin_inset Quotes eld
-\end_inset 
-
-histogram
-\begin_inset Quotes erd
-\end_inset 
-
-, then we find that the notion of 
-\begin_inset Quotes eld
-\end_inset 
-
-bins
-\begin_inset Quotes erd
-\end_inset 
-
- are actually special for Histogram.
- An axis should have a name and a unit to denote its physical meaning.
+ Axis is one thing that brings physical meaning to histogram.
+ How can we attach physical meaning to an axis? An axis is usually associated
+ with a name and a unit to denote its physical meaning.
  For example, name =
 \begin_inset Quotes eld
 \end_inset 
@@ -336,7 +319,7 @@ meV
 
  should give us a pretty good idea of the meaning of an axis, while at the
  same time it perfectly describes a physical quantity.
- So there is one more important concept here: 
+ So we probably catch one very important concept here: 
 \begin_inset Quotes eld
 \end_inset 
 
@@ -346,12 +329,47 @@ physical quantity
 
 .
  
+\layout Standard
+
+There is another problem that we have not been able to think through carefully.
+ Up to this point, we think of an axis as a mapping from bins to indexes.
+ But if we think about Axis without the context of 
+\begin_inset Quotes eld
+\end_inset 
+
+histogram
+\begin_inset Quotes erd
+\end_inset 
+
+, then we find that the notion of 
+\begin_inset Quotes eld
+\end_inset 
+
+bins
+\begin_inset Quotes erd
+\end_inset 
+
+ are actually special for Histogram.
+ In the most common scenario, we are dealing with ticks instead of bins
+ for axis.
+ How should we handle that?
+\layout Standard
+
+Let us leave the second question here and first start thinking about 
+\begin_inset Quotes eld
+\end_inset 
+
+physical quantity
+\begin_inset Quotes erd
+\end_inset 
+
+.
 \layout Section
 
 Physical Quantity
 \layout Standard
 
-What is a physical quantity? It is anything like 
+What is a physical quantity? Things like 
 \begin_inset Formula $t$
 \end_inset 
 
@@ -363,9 +381,9 @@ What is a physical quantity? It is anything like
 \begin_inset Formula $V$
 \end_inset 
 
- (electric potential).
- This sounds a simple concept to us, but in programming we always want a
- more rigorous analysis.
+ (electric potential) are physical quantities.
+ It sounds a simple concept to us, but in programming we always want to
+ have a more rigorous analysis.
  
 \layout Standard
 
@@ -376,13 +394,17 @@ Problem 1: A free falling ball starts falling at
 \begin_inset Formula $t=0s$
 \end_inset 
 
-.
- We know its acceleration is 
-\begin_inset Formula $g=9.8\mathrm{m/s}$
+ with initial speed 
+\begin_inset Formula $v=0m/s$
 \end_inset 
 
 .
- Please calculate the height this ball falls when 
+ We know its acceleration is 
+\begin_inset Formula $g=9.8m/s^{2}$
+\end_inset 
+
+.
+ Please calculate the distances this ball falls at 
 \begin_inset Formula $t=1,\:,3\:,7$
 \end_inset 
 
@@ -405,7 +427,11 @@ tells us that the physical quantity
 \begin_inset Formula $t$
 \end_inset 
 
- takes the value 0 seconds.
+ takes the value 
+\series bold 
+0 seconds
+\series default 
+.
  It sounds a good idea to define a class 
 \shape italic 
 PhysicalQuantity
@@ -427,16 +453,16 @@ t
  
 \layout Standard
 
-Another important property of physical quantity is, it can take a value.
- 
-\begin_inset Formula $0s$
-\end_inset 
-
- is a valid value for physical quantity 
+A physical quantity can take a value.
+ For physical quantity 
 \begin_inset Formula $t$
 \end_inset 
 
-, while 
+, 
+\begin_inset Formula $0s$
+\end_inset 
+
+ is a valid value, while 
 \begin_inset Quotes eld
 \end_inset 
 
@@ -487,7 +513,7 @@ collapsed false
 
 \end_inset 
 
-PhysicalQuantity class diagram
+Initial draft of PhysicalQuantity class diagram
 \end_inset 
 
 
@@ -496,7 +522,8 @@ PhysicalQuantity class diagram
 In the scope of our histogram package, there are quantities that are not
  physical.
  For example, a detector ID is not really a physical quantity.
- It would be a better design if we consider this in a broader sense.
+ It would be a better design if we consider physical quantity in a broader
+ sense.
  So we introduced AbstractQuantity, and made PhysicalQuantity a subclass.
  Figure 
 \begin_inset LatexCommand \ref{cap:Quantity-classes}
@@ -529,7 +556,7 @@ collapsed false
 
 \end_inset 
 
-Quantity classes
+A more complete class diagram for Quantity classes
 \end_inset 
 
 
@@ -566,7 +593,7 @@ means the physical quantity
 which sounds pretty good (we will get back to this later...) 
 \layout Standard
 
-We do also need sometime a list of values for a quantity.
+Sometimes, we might need a list of values for a quantity.
  For example in Problem 1, we have a list of values for 
 \begin_inset Formula $t$
 \end_inset 
@@ -575,14 +602,14 @@ We do also need sometime a list of values for a quantity.
 \begin_inset Formula $t=1,\:,3\:,7$
 \end_inset 
 
-seconds.
+seconds, for which we need to calculate traveling distances of the ball.
  We could represent such values as
 \layout LyX-Code
 
 >>> ts = [1*second, 3*second, 7*second]
 \layout Standard
 
-but we could also save the unit 
+but we could optimize that by saving the unit 
 \begin_inset Quotes eld
 \end_inset 
 
@@ -590,7 +617,7 @@ second
 \begin_inset Quotes erd
 \end_inset 
 
- separately for optimization.
+ separately.
  We introduced class 
 \shape italic 
 PhysicalValueList
@@ -745,27 +772,33 @@ QuantiyValueList
 , in which we bind any quantity to a list of its values.
 \layout Itemize
 
-For physical quantity, it is better to bind 
+For physical quantity, it is better to bind a physical quantity with a
 \shape italic 
-PhysicalValueList
+ PhysicalValueList
 \shape default 
- instance (instead of a normal list of values) with a physical quantity
- to form a 
+ instance (instead of a normal list of physical values) to form a 
 \shape italic 
 QuantityValueList
 \shape default 
  instance, in order to improve performance.
 \layout Itemize
 
-There is no 
+
+\shape italic 
+PhysicalQuantityValueNdArray
+\shape default 
+ binds a physical quantity with a multiple-dimensional array of physical
+ values.
+ Please note that there is no 
 \shape italic 
 QuantityValueNdArray
 \shape default 
-, so an aribitrary quantiy may not be binded there.
+, so an aribitrary quantity may not be binded to a multiple-dimensional
+ array of its values.
  Only a physical quantity can be binded with a multiple-dimensional array
  of its values.
  This is because we are not yet supporting a generic NdArray that can take
- values of any quantity, although we could simple use nested python list.
+ values of any quantity, although we could simply use nested python list.
  
 \layout Section
 
@@ -781,14 +814,22 @@ An axis represents a quantity, be it a physical quantiy like energy, or
  An axis has ticks, which is a list of values of the corresponding physical
  quantity.
  So, an axis is a binding of physical quantity and its values.
- Now it is simple, it could be either a QuantityValueList instance, or it
- might use one.
+ Now that we already have 
+\shape italic 
+QuantityValueList
+\shape default 
+, it is simple.
+ Either it could be a 
+\shape italic 
+QuantityValueList
+\shape default 
+ instance, or it might use one.
  Figure 
 \begin_inset LatexCommand \ref{cap:Axis-class-diagram}
 
 \end_inset 
 
- gives details of the base class AbstractDiscreteAxis and its implementations.
+ gives details of the base class AbstractDiscreteAxis and its subclasses.
 \layout Standard
 
 
@@ -830,9 +871,9 @@ index
  for.
 \layout Itemize
 
-Some quantity are discrete by nature, including detector ID, pixel ID, and
- quantized physical quantities.
- Axis of such quantity is named 
+Some quantities are discrete by nature, including detector ID, pixel ID,
+ and quantized physical quantities.
+ The Axis class of such quantity is named 
 \shape italic 
 GenuineDiscreteAxis
 \shape default 
@@ -848,7 +889,8 @@ DiscretizedAxis
 \shape italic 
 GenuineDiscreteAxis
 \shape default 
- will refrain us making mistakes in, for example, doing interploation.
+ will make it difficult for us to make mistakes in, for example, doing interpola
+tion.
 \layout Itemize
 
 Axis could be defined as bins instead of ticks, this is what 
@@ -863,7 +905,7 @@ GridData
 
 In summary, we have identified several data structures up to this point.
  We would like to build something useful on top of them.
- Let us see how far away are we from 
+ Let us see how far away we are from 
 \shape italic 
 Histogram
 \shape default 
@@ -903,14 +945,14 @@ Here,
 \end_inset 
 
  all represent some quantities.
- It is a common situation in physics that we know all of the following
+ It is a common situation in physics that we know values of all of the following
 \begin_inset Formula \begin{eqnarray*}
  & \{ x_{i}\},\:\{ y_{j}\},\:\{ z_{k}\},\;...\\
  & f_{ijk...}\end{eqnarray*}
 
 \end_inset 
 
-while we want to be able to approximate the mapping 
+and we want to be able to approximate the mapping 
 \begin_inset Formula $\phi:\; x,y,z,...\rightarrow f$
 \end_inset 
 
@@ -928,7 +970,7 @@ while we want to be able to approximate the mapping
 
 \begin_inset Float figure
 wide false
-collapsed false
+collapsed true
 
 \layout Standard
 \align center 
@@ -961,8 +1003,18 @@ GridData
 :
 \layout Enumerate
 
-Constructor takes two inputs: a list of axes, and a multiple dimensional
- array of values of 
+Constructor takes two inputs: 
+\begin_deeper 
+\layout Enumerate
+
+a list of axes, and
+\layout Enumerate
+
+the binding of physical quantity 
+\begin_inset Formula $f$
+\end_inset 
+
+ with a multiple dimensional array of values of 
 \begin_inset Formula $f$
 \end_inset 
 
@@ -971,7 +1023,7 @@ Constructor takes two inputs: a list of axes, and a multiple dimensional
 \begin_inset Formula $f_{ijk...}$
 \end_inset 
 
- (we call it 
+ (we actually call it 
 \begin_inset Formula $z$
 \end_inset 
 
@@ -979,8 +1031,9 @@ Constructor takes two inputs: a list of axes, and a multiple dimensional
 \shape italic 
 GridData
 \shape default 
-).
+ class).
  
+\end_deeper 
 \layout Enumerate
 
 Method 
@@ -1002,7 +1055,11 @@ zs
 \begin_inset Quotes erd
 \end_inset 
 
- returns the 
+ returns the binding of physical quantity 
+\begin_inset Formula $f$
+\end_inset 
+
+ and values 
 \begin_inset Formula $f_{ijk...}$
 \end_inset 
 
@@ -1013,11 +1070,15 @@ Method getz evaluates
 \begin_inset Formula $f$
 \end_inset 
 
- given coordinates in axes.
+ given coordinates.
  No interpolation is available.
 \layout Enumerate
 
-Method setz set f to a new value at given coordinates
+Method setz set 
+\begin_inset Formula $f$
+\end_inset 
+
+ to a new value at given coordinates
 \layout Enumerate
 
 Method getSubGrid returns a new GridData in the specified phase space.
@@ -1064,38 +1125,13 @@ Histogram
 
 Now we finally have histogram.
  A histogram is simply a container of two DataOnCells instances.
- It will need some convenient functions.
- 
-\layout Chapter
-
-old
-\layout Standard
-
-Therefore, we have introduced AbstractFieldOnGrid.
- An implementation of abstract class AbstractFieldOnGrid is FieldOnGrid,
- which contains a NdArray instance to represent the multiple dimensional
- array 
-\begin_inset Formula $f_{ijk...}$
-\end_inset 
-
-, and a list of axes for 
-\begin_inset Formula $\{ x_{i}\},\:\{ y_{j}\},\:\{ z_{k}\},\:...$
-\end_inset 
-
- In implementation of FieldOnGrid, we must make it clear how indexes of
- axes correspond to the indexes in multiple dimensional array 
-\begin_inset Formula $f_{ijk...}$
-\end_inset 
-
-
-\layout Standard
-
-Figure 
-\begin_inset LatexCommand \ref{cap:histogram-class-diagram-new}
+ It will need some convenient functions, but generally it is pretty simple
+ (Figure 
+\begin_inset LatexCommand \ref{cap:Histogram-class}
 
 \end_inset 
 
- is the class diagram of histogram package.
+).
 \layout Standard
 
 
@@ -1104,10 +1140,10 @@ wide false
 collapsed false
 
 \layout Standard
-
+\align center 
 
 \begin_inset Graphics
-	filename histogram-class-diagram-new2.eps
+	filename histogram.eps
 	width 14cm
 	keepAspectRatio
 
@@ -1117,48 +1153,11 @@ collapsed false
 \layout Caption
 
 
-\begin_inset LatexCommand \label{cap:histogram-class-diagram-new}
+\begin_inset LatexCommand \label{cap:Histogram-class}
 
 \end_inset 
 
-Histogram class diagram
-\end_inset 
-
-
-\layout Standard
-
-In comparison, the original class diagram is in Figure 
-\begin_inset LatexCommand \ref{cap:histogram-class-diagram}
-
-\end_inset 
-
-.
-\layout Standard
-
-
-\begin_inset Float figure
-wide false
-collapsed false
-
-\layout Standard
-
-
-\begin_inset Graphics
-	filename histogram-class-diagram.eps
-	width 15cm
-	keepAspectRatio
-
-\end_inset 
-
-
-\layout Caption
-
-
-\begin_inset LatexCommand \label{cap:histogram-class-diagram}
-
-\end_inset 
-
-Histogram class diagram
+ Histogram class
 \end_inset 
 
 
@@ -1167,97 +1166,33 @@ Histogram class diagram
 Things to note:
 \layout Itemize
 
-Histograms have 
-\begin_inset Quotes eld
-\end_inset 
-
-meta-data
-\begin_inset Quotes erd
-\end_inset 
-
-.
- Those 
-\begin_inset Quotes eld
-\end_inset 
-
-meta-data
-\begin_inset Quotes erd
-\end_inset 
-
- are stored in DictAttributeCont instances.
-\layout Itemize
-
-FiledOnGrid contains a storage (NdArray instance) and represents a physical
- quantity filed.
-\layout Itemize
-
-AxisWithBins represents a physical quantity too.
- It contains a list of bins for that axis.
- It has convenient methods like binCenters and binBoundaries.
- It is an implementation of AbstractDiscretizedAxis, which represents any
- axis that is discretized somehow.
- AbstractDiscretizedAxis is a subclass of AbstractAxis.
-\layout Itemize
-
-Histogram contains two fileds-on-grid to store data and error bars.
- It has a container of attributes to store meta-data.
-\layout Itemize
-
-Numerical operations on histogram are implemented by performing numerical
- operations on FieldOnGrid.
- Numerical operations on FieldOnGrid are implemented by performing numerical
- operations on NdArray instances.
- Error propagations are automatically performed for histograms.
+Numerical operations on histogram will be implemented by performing numerical
+ operations on PhysicalValueNdArray.
+ Numerical operations on PhysicalValueNdArray are implemented by performing
+ numerical operations on NdArray instances.
+ Error propagations will be automatically performed for histograms.
 \layout Itemize
 
 NdArray has an abstract interface.
- Histograms and FieldOnGrid only use those interface.
+ Histograms and PhysicalValueNdArray only use those interfaces.
  Solid implementations of NdArray must provide those methods defined in
  the abstract interface.
 \layout Itemize
 
-Slicing on FieldOnGrid are implemented by performing slicing on its NdArray
+Slicing on GridData are implemented by performing slicing on its 
+\begin_inset Quotes eld
+\end_inset 
+
+
+\shape italic 
+zs
+\shape default 
+
+\begin_inset Quotes erd
+\end_inset 
+
  and axes.
  
-\layout Itemize
-
-There are two different kinds of axis.
- The usual case is that an axis represents a continuous physical quantity
- (energy, time, momentum, etc.), and the axis instance contains a storage
- of bin boundaries.
- The size of that storage is then 
-\begin_inset Formula $n+1$
-\end_inset 
-
-, where 
-\begin_inset Formula $n$
-\end_inset 
-
- is the number of bins.
- In some situation an axis can represent a discrete physical quantity (detector
- ID, pixel ID, etc.), and the axis instance contains a storage of those discrete
- numbers.
- At the end of that storage, a number (any number) will be appended to make
- sure that the size of the storage is also 
-\begin_inset Formula $n+1$
-\end_inset 
-
-, where 
-\begin_inset Formula $n$
-\end_inset 
-
- is the number of bins.
- 
-\layout Itemize
-
-Slicing on histogram using axes coordinates actually requires mapping of
- value to index.
- For example, suppose we have an axis E (energy), its bin boundaries are
- [0.5, 1.5, 2.5, 3.5].
- We would like to map value 1.0 to index 0, 2.0 to index 1, etc etc.
- This mapping is done in AxisMapper.
- Because theree are two kinds of axes (continuous physical quantity and
- discrete physical quantity), there are two different axis mappers.
 \layout Itemize
 
 Histogram can only represent a rectangular region in a phase space.
@@ -1267,65 +1202,4 @@ Histogram can only represent a rectangular region in a phase space.
  In those cases, if the non-rectangular region can be easily divided to
  several rectangular regions, we can use HistCollection.
  HistCollection is a collection of histograms.
-\layout Itemize
-
-Histogram slicing could happen in two ways.
- Let us suppose we have a histogram that represents 
-\begin_inset Formula $I(2\theta)$
-\end_inset 
-
-.
- Suppose the axis 
-\begin_inset Formula $2\theta$
-\end_inset 
-
- has bin boundaries [10., 20., 30., ..., 120.].
- We could do a slicing using bin indexes: I[ 2:5 ] --> 
-\begin_inset Formula $I(2\theta)$
-\end_inset 
-
- curve for 
-\begin_inset Formula $2\theta=$
-\end_inset 
-
-[30., 40., 50.].
- We could also do a slicing using axis values: I[10.:50.]--> 
-\begin_inset Formula $I(2\theta)$
-\end_inset 
-
- curve for 
-\begin_inset Formula $2\theta=$
-\end_inset 
-
-[10.,20.,30.,40., 50.].
- We don't want to confuse users with these two cases.
- Currently the solution is that we only support the latter case, and the
- latter case will be done by using 
-\begin_inset Quotes eld
-\end_inset 
-
-SlicingInfo
-\begin_inset Quotes erd
-\end_inset 
-
-, i.e., instead of 
-\begin_inset Quotes eld
-\end_inset 
-
-I[10.:50.]
-\begin_inset Quotes erd
-\end_inset 
-
-, we require 
-\begin_inset Quotes eld
-\end_inset 
-
-I[SlicingInfo((10.,50.)]
-\begin_inset Quotes erd
-\end_inset 
-
-.
- Please also note that slicing using axis values is inclusive at both ends
- (compared to normal python list slicing that is inclusive at front but
- exclusive at back: [1 : 4] = 1, 2, 3)
 \the_end
