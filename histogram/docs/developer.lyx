@@ -476,6 +476,16 @@ hello
 PhysicalQuantity
 \shape default 
  instance better has a method to verify whether a value is valid.
+ Please note, however, 
+\series bold 
+we don't want to put a value (0seconds) into the PhysicalQuantity (
+\begin_inset Formula $t$
+\end_inset 
+
+) class
+\series default 
+.
+ The binding of value to physical quantity will happen later.
 \layout Standard
 
 The UML class diagram for 
@@ -487,7 +497,7 @@ PhysicalQuantity
 
 \end_inset 
 
-, in which we added a method to compare physical quantities.
+, in which we added a method to compare physical quantities (not values).
 \layout Standard
 
 
@@ -819,11 +829,11 @@ An axis represents a quantity, be it a physical quantiy like energy, or
 QuantityValueList
 \shape default 
 , it is simple.
- Either it could be a 
+ An axis definitely can use a 
 \shape italic 
 QuantityValueList
 \shape default 
- instance, or it might use one.
+ instance.
  Figure 
 \begin_inset LatexCommand \ref{cap:Axis-class-diagram}
 
@@ -898,6 +908,10 @@ Axis could be defined as bins instead of ticks, this is what
 AxisWithBins
 \shape default 
  for.
+ So, for AxisWithBins, we are more concerned with bins.
+ But we can difine ticks for AxisWithBins too.
+ Here is the definition: for AxisWithBins, ticks in the usual meaning are
+ centers of bins.
 \layout Section
 
 GridData
@@ -957,7 +971,7 @@ and we want to be able to approximate the mapping
 \end_inset 
 
  from those data.
- We ask the class GridData (maybe should find a better name) to do partially
+ We ask the class GridData (maybe we should find a better name) to do partially
  this work for us.
  Class diagram for GridData and its subclasses is presented in Figure 
 \begin_inset LatexCommand \ref{cap:GridData-class-diagram}
