@@ -15,7 +15,7 @@
 #  config/make/std-docs.def
 #  config/external/doxygen
 
-PROJECT = histogram
+PROJECT = histogram/branches/prototype2
 PACKAGE = histogram
 
 
@@ -60,7 +60,7 @@ include std-docs.def
 
 export:: export-texdocs 
 
-export-texdocs:: $(TEXDOCS)
+export-texdocs:: $(TEXDOCS) $(EXPORT_DOCDIR)
 	$(CP_F) *.pdf $(EXPORT_DOCDIR)
 
 # version
