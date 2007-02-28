@@ -28,11 +28,11 @@
 ## NumpyNdArray.NdArray is a wrapper of numpy.ndarray
 ##
 ## StdVectorNdArray.NdArray is built on top of the 
-## <a href="http://www.cacr.caltech.edu/projects/ARCS/autogen-arcs-docs/stdVector/stdVector/html/index.html">stdVector</a>
+## <a href="/doxygen-docs/stdVector/stdVector/html/index.html">stdVector</a>
 ## package.
 ##
 ## Currently in the 
-## <a href="http://www.cacr.caltech.edu/projects/ARCS/autogen-arcs-docs/histogram/histogram/html/index.html">histogram</a>
+## <a href="/doxygen-docs/histogram/histogram/html/index.html">histogram</a>
 ## package, instances of Dataset class uses instances of StdVectorNdArray.NdArray class
 ## to store data.
 
