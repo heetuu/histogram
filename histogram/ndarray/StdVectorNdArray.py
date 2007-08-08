@@ -16,7 +16,7 @@
 ##
 ## This module hosts an implementation of ndarray.NdArray.NdArray using
 ## std::vector. This package uses the python package
-## <a href="/doxygen-docs/stdVector/stdVector/html/">stdVector</a>.
+## <a href="../../../stdVector/stdVector/html/">stdVector</a>.
 ## stdVector c++ implementation is not as fast as numpy arrays when array is big,
 ## so a StdVectorNdArray.NdArray is casted to an NumpyNdArray.NdArray
 ## if an array is big.
