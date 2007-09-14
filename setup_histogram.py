@@ -24,6 +24,7 @@ def preparePackage( package, sourceRoot = "." ):
     #apps
     package.addScripts(sourceFiles = [
         "applications1/gui/HistogramGUIApp.py",
+        "applications1/PlotHist.py",
         #"applications/gui/histogramGui.py",
         ] )
 
