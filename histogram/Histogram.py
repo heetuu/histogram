@@ -708,7 +708,7 @@ class Histogram( AttributeCont):
                 axisName, _short_list_str(axis.binCenters() ) )
             continue
 
-        shape = "- Shape: %s" % self.shape()
+        shape = "- Shape: %s" % (self.shape(),)
         
         attrs = [ (name, self.getAttribute(name)) for name in \
                   self.listAttributes() ]

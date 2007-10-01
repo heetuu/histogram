@@ -393,7 +393,9 @@ def makeHistogram( name, axes, data, errs, unit="1", data_type = 'double'):
     else: errsDS = createDataset( "errs", unit**2, data = errs )
     
     from Histogram import Histogram
-    return Histogram( name = name, data = dataDS, errors = errsDS, axes = _axes )
+    h = Histogram( name = name, data = dataDS, errors = errsDS, axes = _axes )
+    h._setShape( tuple([ len(_axis.binCenters()) for _axis in h.axes() ]) )
+    return h
 
 
 def makeHistogramCollection( args, factory = None ):
