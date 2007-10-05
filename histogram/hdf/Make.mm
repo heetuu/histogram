@@ -36,9 +36,10 @@ all: export
 # export
 
 EXPORT_PYTHON_MODULES = \
+	Renderer.py \
+	Parser.py \
 	__init__.py  \
 
-#    MonitorData.py       \
 
 
 export:: export-package-python-modules 
