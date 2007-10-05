@@ -417,7 +417,10 @@ def unitFromString( s ):
     if s is None: return 1
     if isinstance( s, unitFromString.unittype ): return s
     if isinstance( s, basestring ): return unitFromString.parser.parse( s )
-    raise NotImplementedError , "Don't know how to convert %s to unit" % s
+    try: return unitFromString.parser.parse( str(s) )
+    except:
+        raise NotImplementedError , "Don't know how to convert %r to unit" % s
+    raise "Should not reach here"
 from pyre.units import parser
 unitFromString.parser = parser()
 del parser
