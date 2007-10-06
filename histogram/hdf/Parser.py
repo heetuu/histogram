@@ -99,7 +99,7 @@ class Parser:
             continue
 
         axes = grid
-        print axes, name, data, errors
+        #print axes, name, data, errors
 
         name = histogram.name() 
 

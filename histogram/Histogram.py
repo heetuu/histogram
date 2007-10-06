@@ -29,7 +29,7 @@ class Histogram( AttributeCont):
     """
 
     def __init__( self, name = '', data = None, errors = None,
-                  axes = [], attributes = None, **kwds):
+                  axes = [], attributes = None, unit = '1', **kwds):
         """Histogram( name, data, errors, axes, attributes) -> new Histogram
         Create a new histogram instance.
         Inputs:
@@ -47,6 +47,7 @@ class Histogram( AttributeCont):
         if attributes is None: attributes = dict()
         AttributeCont.__init__( self, attributes)
         self.setAttribute( 'name', name)
+        self.setAttribute( 'unit', _tounit(unit) )
 
         from DatasetContainer import DatasetContainer as DC
 
@@ -64,6 +65,9 @@ class Histogram( AttributeCont):
         if data is None: raise "data should be provided"
         self._add_data_and_errors( data, errors )
         return
+
+
+    def unit(self): return self.getAttribute( 'unit' )
 
 
     def __getitem__(self, s):
@@ -728,6 +732,9 @@ class Histogram( AttributeCont):
 
 
     def _add_data_and_errors(self, data, errors ):
+        #check sanity
+
+        #1. check shape
         if errors is not None and data.shape() != errors.shape():
             msg = "Incompatible shapes between data (%s) and errors (%s)" % (
                 data.shape(), errors.shape())
@@ -740,11 +747,26 @@ class Histogram( AttributeCont):
             dshape, shape )
         self._setShape( shape )
 
+        #2. check type code
         if errors is not None and data.typecode() != errors.typecode():
             msg = "Incompatible type codes between data (%s) and errors (%s)" \
                   % (data.typeCode(), errors.typeCode())
             raise TypeError, msg
         self._typeCode = data.typecode()
+
+        #3. check unit
+        unit = _tounit( self.unit() )
+        dunit = _tounit( data.unit() )
+        eunit = dunit*dunit
+        if errors: eunit = _tounit( errors.unit() )
+        try:
+            unit + dunit
+            unit * unit + eunit
+        except:
+            msg = "Unit mismatch: histogram unit: %s, data unit: %s, "\
+                  "errors unit: %s." % (
+                unit, dunit, eunit )
+            raise ValueError, msg
 
         self.addDataset( 'data', data )
         self.addDataset( 'error', errors )
@@ -758,6 +780,12 @@ class Histogram( AttributeCont):
     pass # end of Histogram
 
 
+def _tounit( candidate ):
+    if isinstance( candidate, basestring ):
+        from pyre.units import parser
+        parser = parser()
+        return parser.parse( candidate )
+    return candidate
 
 
 def _indexFromIndexes( indexes, shape ):

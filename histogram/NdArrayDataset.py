@@ -78,7 +78,7 @@ class Dataset( DatasetBase):
         return self._attributeCont.getAttribute('unit')
     
 
-    def __init__( self, name='', unit='', attributes = {},
+    def __init__( self, name='', unit='1', attributes = {},
                   shape = [], storage = None):
         """DatasetBase( name='', unit='', attributes={},
         shape = [], storage = None)

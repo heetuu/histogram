@@ -129,6 +129,18 @@ class Histogram_TestCase(TestCase):
         return
 
 
+    def test_histogram5(self):
+        """Histogram.__init__: unit"""
+        h = histogram(
+            'h',
+            [
+            ('x', [1,2,3] ),
+            ],
+            unit = 'meter',
+            )
+        return
+
+
     def test_meshgrid(self):
         """Histogram.__init__: meshgrid"""
         x, y, z = [1,2], [3,4,5], [6,7,8,9]

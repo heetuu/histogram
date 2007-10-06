@@ -141,7 +141,7 @@ def histogram( name, axes, data = None, errors = None, unit="1",
         )
         
     """
-    h = makeHistogram( name, axes, data, errors, unit,
+    h = makeHistogram( name, axes, data, errors, unit = unit,
                        data_type = data_type )
     
     if fromfunction is None: return h
@@ -333,7 +333,7 @@ def volume(shape):
     return reduce(mul, shape)
 
 
-def createDataset( name, unit, shape=[], data = None, data_type = "double",
+def createDataset( name, unit='1', shape=[], data = None, data_type = "double",
                    storage = None, array_factory = None,
                    ):
     """create a dataset
@@ -393,7 +393,8 @@ def makeHistogram( name, axes, data, errs, unit="1", data_type = 'double'):
     else: errsDS = createDataset( "errs", unit**2, data = errs )
     
     from Histogram import Histogram
-    h = Histogram( name = name, data = dataDS, errors = errsDS, axes = _axes )
+    h = Histogram( name = name, unit = unit,
+                   data = dataDS, errors = errsDS, axes = _axes )
     h._setShape( tuple([ len(_axis.binCenters()) for _axis in h.axes() ]) )
     return h
 
