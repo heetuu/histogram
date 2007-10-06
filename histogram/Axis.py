@@ -88,12 +88,12 @@ class Axis( Dataset):
 
     def __len__( self):
         """len(axis) -> number of bins"""
-        return self._storage.size() - 1
+        return self.size()
 
 
     def size( self):
         """size() -> number of bins"""
-        return self._storage.size() - 1
+        return int(self._storage.size() - 1)
 
 
     def __getitem__(self, s):

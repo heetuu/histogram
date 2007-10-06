@@ -432,8 +432,8 @@ class Histogram_TestCase(TestCase):
         from histogram import makeHistogram
         name = "h"
         axes = [ ('x', [1,2,3]), ('yID', [1]) ]
-        data = [ [1,2,3] ]
-        errs = [ [1,2,3] ]
+        data = [ [1],[2],[3] ]
+        errs = [ [1],[2],[3] ]
         h = makeHistogram( name, axes, data, errs )
         h.reduce()
         shape = h.shape()

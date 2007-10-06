@@ -29,8 +29,8 @@ class Renderer(object):
 
         axesNode = nx5elements.group( 'grid', 'Grid', None, None)
         node.addChild( axesNode )
-        for axis in histogram.axes():
-            axisNode = self.onAxis( axis )
+        for i, axis in enumerate(histogram.axes()):
+            axisNode = self.onAxis( axis, i )
             axesNode.addChild( axisNode )
             continue
         
@@ -64,7 +64,10 @@ class Renderer(object):
         return node
 
 
-    def onAxis(self, axis):
+    def onAxis(self, axis, index):
+        #index: index of this axis in the axis array
+        #we need to index that so that axis can be loaded
+        #sequentially.
         
         mapper = axis._mapper
         type = types[mapper.__class__]
@@ -73,7 +76,7 @@ class Renderer(object):
         unit = axis.unit()
         
         node = nx5elements.group(name, 'Axis', None, None)
-        node.setAttributes( { 'type': type, 'unit': unit } )
+        node.setAttributes( { 'type': type, 'unit': unit, 'index': index } )
 
         bbs = axis.binBoundaries()
         bbsnode = self.onVector(
@@ -115,8 +118,8 @@ types = {
 def test():
     from histogram import histogram, arange
     h = histogram('h',
-                  [('x', arange(0,100, 1.) ),
-                   ('y', arange(100, 180, 1.) ),]
+                  [('y', arange(0,100, 1.) ),
+                   ('x', arange(100, 180, 1.) ),]
                   )
 
     g = Renderer().render(h)

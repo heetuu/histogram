@@ -64,7 +64,22 @@ class Parser:
 
     def onGrid(self, grid):
         #for now, grid is a directory of axes
-        return [ axis.identify(self) for axis in grid.children() ]
+
+        #number of axes
+        n = len( grid.children() )
+
+        #container of results
+        ret = [None for i in range(n)]
+        
+        for axisNode in grid.children():
+            index = axisNode.getAttribute( 'index' )
+            axis = axisNode.identify(self)
+            ret[index] = axis
+            continue
+
+        for axis in ret: assert axis is not None
+
+        return ret            
 
 
     def onValueNdArray(self, valueArray):

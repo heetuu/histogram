@@ -672,32 +672,6 @@ class Histogram( AttributeCont):
         return
 
 
-
-    def _setShape(self, shape):
-        self._shape = shape
-        self._dimension = len(self._shape)
-        return
-
-
-    def _add_data_and_errors(self, data, errors ):
-        if errors is not None and data.shape() != errors.shape():
-            msg = "Incompatible shapes between data (%s) and errors (%s)" % (
-                data.shape(), errors.shape())
-            raise IndexError, msg
-        self._setShape( data.shape() )
-
-        if errors is not None and data.typecode() != errors.typecode():
-            msg = "Incompatible type codes between data (%s) and errors (%s)" \
-                  % (data.typeCode(), errors.typeCode())
-            raise TypeError, msg
-        self._typeCode = data.typecode()
-
-        self.addDataset( 'data', data )
-        self.addDataset( 'error', errors )
-        self._data = data; self._errors = errors
-        return
-
-
     def __str__(self):
         title = "Histogram \"%s\"" %   self.name()
 
@@ -746,6 +720,40 @@ class Histogram( AttributeCont):
         self._setShape( newShape )
         return
 
+
+    def _setShape(self, shape):
+        self._shape = shape
+        self._dimension = len(self._shape)
+        return
+
+
+    def _add_data_and_errors(self, data, errors ):
+        if errors is not None and data.shape() != errors.shape():
+            msg = "Incompatible shapes between data (%s) and errors (%s)" % (
+                data.shape(), errors.shape())
+            raise IndexError, msg
+
+        shape = tuple(self.__shapeFromAxes())
+        dshape = tuple(data.shape())
+        assert shape == dshape, \
+               "shape mismatch: data shape %s, axes shape %s" % (
+            dshape, shape )
+        self._setShape( shape )
+
+        if errors is not None and data.typecode() != errors.typecode():
+            msg = "Incompatible type codes between data (%s) and errors (%s)" \
+                  % (data.typeCode(), errors.typeCode())
+            raise TypeError, msg
+        self._typeCode = data.typecode()
+
+        self.addDataset( 'data', data )
+        self.addDataset( 'error', errors )
+        self._data = data; self._errors = errors
+        return
+
+
+    def __shapeFromAxes(self):
+        return tuple( [ axis.size() for axis in self.axes() ] )
 
     pass # end of Histogram
 
