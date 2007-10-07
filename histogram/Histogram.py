@@ -47,7 +47,7 @@ class Histogram( AttributeCont):
         if attributes is None: attributes = dict()
         AttributeCont.__init__( self, attributes)
         self.setAttribute( 'name', name)
-        self.setAttribute( 'unit', _tounit(unit) )
+        self.setAttribute( 'unit', tounit(unit) )
 
         from DatasetContainer import DatasetContainer as DC
 
@@ -70,6 +70,9 @@ class Histogram( AttributeCont):
     def unit(self): return self.getAttribute( 'unit' )
 
 
+    def isunitless(self): return isunitless(self.unit())
+
+
     def __getitem__(self, s):
         """Slicing
         h[ (3.0, 4.0), () ]
@@ -88,7 +91,8 @@ class Histogram( AttributeCont):
             #the following line will fail if a dataset is None
             #should define a special NoneDataset to solve this problem
             newdatasets = [dataset[indexSlices] for dataset in self.datasets()]
-            if isNumber(newdatasets[0]): return newdatasets
+            if isNumber(newdatasets[0]) or isDimensional(newdatasets[0]):
+                return newdatasets
 
             newAttrs = self._attributes.copy(); newAxes = []
             for slicingInfo, name in zip(slicingInfos, self.axisNameList()):
@@ -123,11 +127,15 @@ class Histogram( AttributeCont):
             s, self.dimension())
 
 
-    def __setitem__(self, s, v):
-        if self.dimension() == 1 and not isinstance(s, dict): s = (s,)
+    def __setitem__(self, indexes_or_slice, v):
+        if self.dimension() == 1 and not isinstance(indexes_or_slice, dict):
+            s = (indexes_or_slice,)
 
-        if isinstance(s, dict): s = _slicingInfosFromDictionary(s, self)
-        else: s = _makeSlicingInfos( s, self.dimension() )
+        if isinstance(indexes_or_slice, dict):
+            s = _slicingInfosFromDictionary(indexes_or_slice, self)
+        else:
+            s = _makeSlicingInfos( indexes_or_slice, self.dimension() )
+            pass # end if
         
         #if isinstance(s, list): s = tuple(s) # expect tuple
         if isSlicingInfo(s): s = (s,)
@@ -140,8 +148,11 @@ class Histogram( AttributeCont):
 
             #now we want to know if user is requesting for a real slice
             #or just an element
+            #this is done by trying to get a slice of the dataset self._data
             aslice = self._data[indexSlices]
-            if isNumber(aslice) and isNumberList(v) : #element, not slice
+
+            #1. element, not slice
+            if isNumber(aslice) and isNumberList(v) :
                 if len(v) == 2:
                     self._data[indexSlices] = v[0]
                     self._errors[indexSlices] = v[1]
@@ -156,40 +167,27 @@ class Histogram( AttributeCont):
                           % (len(v), len(mydatasets))
                 return v
 
-            #slice it is
+            #2. slice
             shape = aslice.shape() #get shape
             # for slice, we would require the right hand side to be a list of datasets
-            if isHistogram( v ):
-                v = v.data(), v.errors()
-            if not isDSList( v ):
-                assert len(v) == len(mydatasets), \
-                       "rhs must be a %s-tuple of datasets, "\
-                       "instead of a %s-tuple" % (
-                    len( mydatasets ), len(v) )
-                #try creating datasets from given arrays
-                from histogram import createDataset
-                dslist = [
-                    createDataset( name='', unit=None, shape = shape, data=d )
-                    for d in v ]
-
-                v = dslist
-                pass 
-
-            if len(mydatasets) == len(v):
-                for ds1, ds2 in zip( mydatasets, v ):
-                    ds1[ indexSlices ] = ds2
-                    continue
-                pass
-            else:
-                raise RuntimeError , \
-                      "histogram[ slice ] = rhs. rhs must have %d datasets"\
-                      % len(mydatasets)
+            if isHistogram( v ): v = v.data(), v.errors()
             
-            return v
+            # try to set slice, defer to dataset's __setitem__
+            # but first we must assert length of arrays match
+            assert len(v) == len(mydatasets), \
+                   "rhs must be a %s-tuple of datasets, "\
+                   "instead of a %s-tuple" % (
+                len( mydatasets ), len(v) )
+            for lhs, rhs in zip(mydatasets, v):
+                if rhs is not None : lhs[ indexSlices ] = rhs
+                else: debug.log( 'indefinite behavior: setting to None' )
+                continue
+            
+            return self[ indexes_or_slice ]
         
             
-        raise NotImplementedError , "Histogram[ %s ]. my dimension: %s" % (
-            s, self.dimension())
+        raise NotImplementedError , "Histogram[ %s ] = %s. my dimension: %s" % (
+            s, v, self.dimension())
 
 
 
@@ -253,11 +251,21 @@ class Histogram( AttributeCont):
         """
         data = self._data; errs = self._errors
         
-        if isNumberPair(other):
+        if isNumberPair(other) and self.isunitless():
             
             x, xerr = other
-            data += x;
+            data += x
             errs += xerr
+
+            pass
+
+        elif isDimensionalPair( other ):
+
+            x, xerr = other
+            data += x
+            errs += xerr
+
+            pass
         
         elif isHistogram(other):
             
@@ -286,10 +294,19 @@ class Histogram( AttributeCont):
         """
         data = self._data; errs = self._errors
         
-        if isNumberPair(other):
+        if isNumberPair(other) and self.isunitless():
             
             x, xerr = other
             data -= x; errs += xerr
+
+            pass
+
+        elif isDimensionalPair(other):
+
+            x, xerr = other
+            data -= x; errs += xerr
+
+            pass
         
         elif isHistogram(other):
             
@@ -309,7 +326,7 @@ class Histogram( AttributeCont):
         """
         data = self._data; errs = self._errors
         
-        if isNumberPair(other):
+        if isNumberPair(other) or isDimensionalPair(other):
             
             x,  dx2 = other
             dx = sqrt(dx2)
@@ -321,6 +338,8 @@ class Histogram( AttributeCont):
             errs.square()
             
             data *= x
+            pass
+
         
         elif isHistogram(other):
             
@@ -354,7 +373,8 @@ class Histogram( AttributeCont):
             y,  dy2 = other
             if dy2 == 0 or dy2 == 0.0: #special case
                 #ydx/y^2
-                errs /= y*y; data /= y
+                #errs /= y*y; data /= y
+                self._setunit(1.*self.unit()/y)
                 return self
 
             dy = sqrt(dy2)
@@ -366,8 +386,18 @@ class Histogram( AttributeCont):
             errs.square()
             
             data /= y
+            pass
+        
+        elif isDimensionalPair(other):
+            y, dy2 = other
+            unitlessother = 1, dy2/y/y
+            self._setunit( 1.*self.unit()/y )
+            self /= unitlessother
+            pass
         
         elif isHistogram(other):
+
+            self._setunit( self.unit()/other.unit() )
             
             y = other._data; dy2 = other._errors
             
@@ -520,7 +550,7 @@ class Histogram( AttributeCont):
         attrs = self._attributes.copy()
         
         res =  Histogram(
-            name = self.name(),
+            name = self.name(), unit = self.unit(),
             data = self._data.copy(), errors = self._errors.copy(),
             axes = axes, attributes = attrs )
 
@@ -682,8 +712,7 @@ class Histogram( AttributeCont):
         axes = "- Axes:\n"
         for axisName in self.axisNameList():
             axis = self.axisFromName(axisName)
-            axes += "   - Axis %s: %s\n" % (
-                axisName, _short_list_str(axis.binCenters() ) )
+            axes += "   - Axis %s\n" % (axis,)
             continue
 
         shape = "- Shape: %s" % (self.shape(),)
@@ -691,8 +720,8 @@ class Histogram( AttributeCont):
         attrs = [ (name, self.getAttribute(name)) for name in \
                   self.listAttributes() ]
         meta = "- Metadata: %s" % (attrs,)
-        data = "- Data: %s" % (self.data().storage().asNumarray(),)
-        errors = "- Errors: %s" % (self.errors().storage().asNumarray(),)
+        data = "- Data: %s" % (self.data(),)
+        errors = "- Errors: %s" % (self.errors(),)
 
         return '\n'.join( [title, axes, shape, meta, data, errors ] )
 
@@ -755,14 +784,11 @@ class Histogram( AttributeCont):
         self._typeCode = data.typecode()
 
         #3. check unit
-        unit = _tounit( self.unit() )
-        dunit = _tounit( data.unit() )
+        unit = tounit( self.unit() )
+        dunit = tounit( data.unit() )
         eunit = dunit*dunit
-        if errors: eunit = _tounit( errors.unit() )
-        try:
-            unit + dunit
-            unit * unit + eunit
-        except:
+        if errors: eunit = tounit( errors.unit() )
+        if unit != dunit or unit*unit != eunit:
             msg = "Unit mismatch: histogram unit: %s, data unit: %s, "\
                   "errors unit: %s." % (
                 unit, dunit, eunit )
@@ -774,18 +800,19 @@ class Histogram( AttributeCont):
         return
 
 
+    def _setunit(self, unit):
+        self.setAttribute( 'unit', unit )
+        self._data._setunit( unit )
+        self._errors._setunit( unit*unit )
+        return
+
+
     def __shapeFromAxes(self):
         return tuple( [ axis.size() for axis in self.axes() ] )
 
     pass # end of Histogram
 
 
-def _tounit( candidate ):
-    if isinstance( candidate, basestring ):
-        from pyre.units import parser
-        parser = parser()
-        return parser.parse( candidate )
-    return candidate
 
 
 def _indexFromIndexes( indexes, shape ):
@@ -801,10 +828,6 @@ def isNumberList( l ):
     return reduce(operator.and_, [isNumber(i) for i in l])
 
 
-def isNumber(a):
-    return isinstance(a, int) or isinstance(a, float)
-
-
 def isDSList( l ):
     return reduce(operator.and_, [isDataset(i) for i in l])
 
@@ -818,17 +841,10 @@ from SlicingInfo import SlicingInfo
 def isSlicingInfo( s ):
     return isinstance(s, SlicingInfo)
 
+
+from _units import isNumberPair, isDimensionalPair, isDimensional, isNumber, tounit, isunitless
+
              
-def isNumberPair(a):
-    if isinstance(a, list): a = tuple(a)
-    if isinstance(a, tuple) and len(a) == 2:
-        for i in a:
-            if not isNumber(i): return False
-            continue
-        return True
-    return False
-
-
 def isHistogram(h):
     return isinstance(h, Histogram)
 

@@ -207,20 +207,20 @@ class Histogram_TestCase(TestCase):
         #set slice
         from histogram.SlicingInfo import SlicingInfo, all, front, back
         from histogram import createDataset
+        from numpy import array
         
-        data = createDataset( "data", "", [2,2] )
-        data[:,:] = [ [1,2],
-                      [3,4], ]
-        errs = createDataset( "errs", "", [2,2] )
-        errs[:,:] = [ [1,2],
-                      [3,4], ]
+        data = createDataset( "data", shape = [2,2] )
+        data[:,:] = array( [ [1,2],
+                             [3,4], ] )
+        errs = createDataset( "errs", shape = [2,2] )
+        errs[:,:] = array( [ [1,2],
+                             [3,4], ] )
 
         histogram[SlicingInfo((0.5, 1.5)), SlicingInfo((1,3))] = data,errs
         self.assertVectorEqual( histogram[0.5,1], (1,1) )
         self.assertVectorEqual( histogram[0.5,3], (2,2) )
         self.assertVectorEqual( histogram[1,1], (3,3) )
         self.assertVectorEqual( histogram[1,3], (4,4) )
-
 
         histogram[(0.5, 1.5),(1,3)] = data,errs
         self.assertVectorEqual( histogram[0.5,1], (1,1) )
@@ -231,9 +231,12 @@ class Histogram_TestCase(TestCase):
         
         from histogram import makeHistogram
         name = "h"
-        axes = [ ('x', [1,2]), ('y', [1,2]) ]
-        data = [ [1,2], [3,4] ]
-        errs = [ [1,2], [3,4] ]
+        axes = [
+            ('x', [1,2]),
+            ('y', [1,2]),
+            ]
+        data = array( [ [1,2], [3,4] ] )
+        errs = array( [ [1,2], [3,4] ] )
         h2 = makeHistogram( name, axes, data, errs )
         histogram[SlicingInfo((0.5, 1.5)), SlicingInfo((1,3))] = h2
 
@@ -247,7 +250,7 @@ class Histogram_TestCase(TestCase):
         histogram[(0.5, 1.5), (1,3)] = data, None
 
         # setslice: rhs is a lit of arrays. histogram is 1D
-        data = [1,2]; errs = data;
+        data = array([1,2]); errs = data;
         histogram[ 0.5, () ] [ (1,3) ] = data, errs
         
         #setitem using dictionary
@@ -365,7 +368,9 @@ class Histogram_TestCase(TestCase):
         h = self._histogram - (1,2)
         self.assertVectorEqual( h[0.5, 1], (-1,2) )
 
-        h = (1,2)  - self._histogram 
+        print self._histogram
+        h = (1,2)  - self._histogram
+        print h
         self.assertVectorEqual( h[0.5, 1], (1,2) )
 
         h = self._histogram - self._histogram2

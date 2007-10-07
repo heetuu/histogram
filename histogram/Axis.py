@@ -16,7 +16,7 @@ class Axis( Dataset):
     
     """Dataset that models a HistogramAxis"""
 
-    def __init__( self, name='', unit='', attributes = {},
+    def __init__( self, name='', unit='1', attributes = {},
                   length = 0, storage = None, mapper = None):
         """HistogramAxis( attributes={},
         length=0, storage=None)

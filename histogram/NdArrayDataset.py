@@ -9,6 +9,41 @@ debug = journal.debug("NdArrayDataset")
 class Dataset( DatasetBase):
     """datasets that use stdVectors"""
 
+    def __init__( self, name='', unit='1', attributes = {},
+                  shape = [], storage = None):
+        """DatasetBase( name='', unit='', attributes={},
+        shape = [], storage = None)
+        Inputs:
+            name: name (string)
+            unit: unit (string)
+            attributes: additional user defined attributes (dictionary)
+            shape: axes dimensions ([integers > 0])
+            storage: raw array/vector etc. holding BIN BOUNDARIES
+        Output:
+            new DatasetBase object
+        Exceptions: None
+        Notes: None"""
+        from DictAttributeCont import AttributeCont
+        # copy user's attributes to avoid confusion
+        attributeCont = AttributeCont( dict(attributes))
+
+        #debug.log("storage = %s" % str(storage))
+        
+        if shape == [] and storage is not None: shape = storage.shape()
+        if shape != [] and storage is not None:
+            if list(storage.shape()) != list(shape):
+                raise "Incompaitlbe inputs: shape = %s, storage.shape = %s" % (
+                    shape, storage.shape())
+            pass
+        shape = list(shape)
+        _checkShape(shape)
+
+        #debug.log("shape = %s" % (storage.shape(),))
+
+        DatasetBase.__init__( self, name, unit, attributeCont, shape, storage)
+        return
+
+
     def attribute( self, name):
         """attribute( attrName) -> attrValue"""
         return self._attributeCont.getAttribute( name)
@@ -28,6 +63,11 @@ class Dataset( DatasetBase):
         """setAttribute( name, value) -> None"""
         self._attributeCont.setAttribute( name, value)
         return
+
+
+    def isunitless(self):
+        from _units import isunitless
+        return isunitless( self.unit() )
 
 
     def shape( self):
@@ -78,48 +118,12 @@ class Dataset( DatasetBase):
         return self._attributeCont.getAttribute('unit')
     
 
-    def __init__( self, name='', unit='1', attributes = {},
-                  shape = [], storage = None):
-        """DatasetBase( name='', unit='', attributes={},
-        shape = [], storage = None)
-        Inputs:
-            name: name (string)
-            unit: unit (string)
-            attributes: additional user defined attributes (dictionary)
-            shape: axes dimensions ([integers > 0])
-            storage: raw array/vector etc. holding BIN BOUNDARIES
-        Output:
-            new DatasetBase object
-        Exceptions: None
-        Notes: None"""
-        from DictAttributeCont import AttributeCont
-        # copy user's attributes to avoid confusion
-        attributeCont = AttributeCont( dict(attributes))
-
-        #debug.log("storage = %s" % str(storage))
-        
-        if shape == [] and storage is not None: shape = storage.shape()
-        if shape != [] and storage is not None:
-            if list(storage.shape()) != list(shape):
-                raise "Incompaitlbe inputs: shape = %s, storage.shape = %s" % (
-                    shape, storage.shape())
-            pass
-        shape = list(shape)
-        _checkShape(shape)
-
-        #debug.log("shape = %s" % (storage.shape(),))
-
-        DatasetBase.__init__( self, name, unit, attributeCont, shape, storage)
-        return
-
-
-
     def copy(self):
         return self._copy( )
 
 
     def sum(self, axis = None):
-        if axis is None : return self.storage().sum()
+        if axis is None : return self.storage().sum() * self.unit()
         name = "sum of %s along axis %s" % (self.name(), axis)
         unit = self.unit() #sum don't change unit
 
@@ -194,9 +198,15 @@ class Dataset( DatasetBase):
     def __iadd__(self, other):
         if other is None: return self
         stor = self.storage()
-        if isNumber(other): stor += other
+        if isNumber(other) and self.isunitless():
+            stor += other/self.unit()
+        elif isDimensional(other):
+            try: self.unit() + other
+            except: raise ValueError, "unit mismatch: %s and %s" % (
+                self.unit(), other)
+            stor += other/self.unit()
         elif isCompatibleDataset(self, other):
-            stor += other.storage()
+            stor += other.storage() * (other.unit()/self.unit())
         else:
             raise NotImplementedError , "%s + %s" % (
                 self.__class__.__name__, other.__class__.__name__)
@@ -206,9 +216,10 @@ class Dataset( DatasetBase):
     def __isub__(self, other):
         if other is None: return self
         stor = self.storage()
-        if isNumber(other): stor -= other
+        if isNumber(other) and self.isunitless(): stor -= other/self.unit()
+        elif isDimensional(other): stor -= other/self.unit()
         elif isCompatibleDataset(self, other):
-            stor -= other.storage()
+            stor -= other.storage() * (other.unit()/self.unit())
         else:
             raise NotImplementedError , "%s - %s" % (
                 self.__class__.__name__, other.__class__.__name__)
@@ -217,9 +228,14 @@ class Dataset( DatasetBase):
 
     def __imul__(self, other):
         stor = self.storage()
-        if isNumber(other): stor *= other
+        if isNumber(other) and (other == 0 or other == 0.0):
+            stor *= 0
+            return self
+        if isNumber(other) or isDimensional(other):
+            self.setAttribute( 'unit', self.unit()*other )
         elif isCompatibleDataset(self, other):
             stor *= other.storage()
+            self.setAttribute( 'unit', self.unit()*other.unit() )
         else:
             raise NotImplementedError , "%s * %s" % (
                 self.__class__.__name__, other.__class__.__name__)
@@ -228,24 +244,33 @@ class Dataset( DatasetBase):
 
     def __idiv__(self, other):
         stor = self.storage()
-        if isNumber(other): stor /= other
+        if isNumber(other) or isDimensional(other):
+            self.setAttribute('unit', 1.* self.unit()/other)
         elif isCompatibleDataset(self, other):
             stor /= other.storage()
+            self.setAttribute( 'unit', 1.* self.unit()/other.unit() )
         else:
             raise NotImplementedError , "%s * %s" % (
                 self.__class__.__name__, other.__class__.__name__)
         return self
 
 
-    #shoud we change the unit???
-    def square(self): self.storage().square()
+    def square(self):
+        self.storage().square()
+        self.setAttribute( 'unit', self.unit()**2 )
+        return
+    
 
-
-    def sqrt(self): self.storage().sqrt()
+    def sqrt(self):
+        self.storage().sqrt()
+        from math import sqrt
+        self.setAttribute( 'unit', sqrt(self.unit()) )
+        return
 
 
     def reverse(self):
         self.storage().reverse()
+        self.setAttribute( 'unit', 1./self.unit() )
         return
 
 
@@ -274,7 +299,7 @@ class Dataset( DatasetBase):
     def __getitem__(self, s):
         if isinstance(s, list): s = tuple(s)
         
-        if isinstance(s, int): return self._storage[s]
+        if isinstance(s, int): return self._storage[s] * self.unit()
         elif isinstance(s, tuple):
             s = list(s)
             slicing = False
@@ -287,14 +312,19 @@ class Dataset( DatasetBase):
             raise IndexError , "Don't know how to do indexing by %s" % (s,)
         
         if slicing: return self._copy( self._storage[s] )
-        return self._storage[s]
+        return self._storage[s] * self.unit()
         
 
     def __setitem__(self, s, rhs):
-        if isDataset( rhs ): rhs = rhs._storage
-        self._storage[s] = rhs
+        if isDataset( rhs ): rhs = rhs._storage * (rhs.unit()/self.unit())
+        self._storage[s] = rhs/self.unit()
         return rhs 
 
+
+    def __str__(self):
+        return '''Dataset %s(unit=%s): %s''' % (
+            self.name(), self.unit(), self.storage().asNumarray() )
+    
 
     def _copy(self, storage = None):
         keys = self.listAttributes()
@@ -308,6 +338,11 @@ class Dataset( DatasetBase):
             name=self.name(), unit=self.unit(), attributes = attrs,
             shape = [], storage = storage)
         return copy
+
+
+    def _setunit(self, unit):
+        self.setAttribute( 'unit', unit )
+        return
     
 
     pass # end of Class Dataset
@@ -322,6 +357,11 @@ def isNumber(a):
     return isinstance(a, float) or isinstance(a, int )
 
 
+def isDimensional(d):
+    from pyre.units.unit import unit
+    return isinstance( d, unit )
+
+
 def isCompatibleDataset(a,b):
     if not isinstance(a, DatasetBase) or not isinstance(b, DatasetBase):
         debug.log("either %s or %s is not a dataset" % (a.__class__.__name__,
@@ -331,10 +371,11 @@ def isCompatibleDataset(a,b):
     if a.shape() != b.shape():
         debug.log("imcompatible shape: %s, %s" % (a.shape(), b.shape()) )
         return False
-    
-##     if a.unit() != b.unit():
-##         debug.log("imcompatible unit: %s, %s" % (a.unit(), b.unit()) )
-##         return False
+
+    try: a.unit() + b.unit()
+    except:
+        debug.log("imcompatible units: %s, %s" % (a.unit(), b.unit()) )
+        return False
     return True
 
 

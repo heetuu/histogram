@@ -35,8 +35,9 @@ class Axis_TestCase(TestCase):
         self.assertVectorEqual( binBoundaries, [0.0, 1.0, 2.0, 3.0] )
         axisMapper = AxisMapper( binBoundaries = binBoundaries )
         
-        axis = Axis( 'x', unit='', attributes = {},
-                     length = nBins, storage = storage, mapper = axisMapper)
+        axis = Axis(
+            'x', unit='1', attributes = {},
+            length = nBins, storage = storage, mapper = axisMapper)
             
         self.assertEqual( axis.cellIndexFromValue( 0.5 ), 0 )
         self.assertEqual( axis.cellIndexFromValue( 0. ), 0 )

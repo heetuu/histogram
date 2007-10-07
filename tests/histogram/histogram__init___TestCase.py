@@ -202,7 +202,7 @@ class Histogram_TestCase(TestCase):
     def test_createDataset(self):
         "histogram.__init__:  createDataset"
         name = "intensity"
-        unit = ""
+        unit = "1"
         shape = [100,200]
         types = [ 'double', 'float', 'int', 'unsigned' ]
         for datatype in types:
