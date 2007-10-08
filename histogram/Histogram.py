@@ -80,6 +80,8 @@ class Histogram( AttributeCont):
         h[ (), () ]
         h[ (None, 4.0),  (999., None ) ]
         """
+        if self.errors() is None: raise NotImplementedError , "__getitem__: errors is None"
+        
         if self.dimension() == 1 and not isinstance(s, dict): s = (s,)
         if isinstance(s, dict): s = _slicingInfosFromDictionary(s, self)
         else: s = _makeSlicingInfos( s, self.dimension() )
@@ -113,7 +115,7 @@ class Histogram( AttributeCont):
                 ["%s(%s)"%(axisName, slicingInfo) for axisName, slicingInfo \
                  in zip(self.axisNameList(), slicingInfos)])
             
-            new = Histogram( name = newName,
+            new = Histogram( name = newName, unit = self.unit(),
                              data = newdatasets[0], errors = newdatasets[1],
                              axes = newAxes, attributes = newAttrs)
             for i in range(2, len(newdatasets)):
@@ -128,6 +130,8 @@ class Histogram( AttributeCont):
 
 
     def __setitem__(self, indexes_or_slice, v):
+        if self.errors() is None: raise NotImplementedError , "__setitem__: errors is None"
+        
         if self.dimension() == 1 and not isinstance(indexes_or_slice, dict):
             s = (indexes_or_slice,)
 
@@ -519,7 +523,7 @@ class Histogram( AttributeCont):
         name = "sum of %s over axis %s" % (self.name(), theAxisName)
         
         res =  Histogram(
-            name = name,
+            name = name, unit = self.unit(),
             data = self._data.sum(axisIndex), errors = self._errors.sum(axisIndex),
             axes = axes, attributes = attrs )
 
@@ -698,6 +702,7 @@ class Histogram( AttributeCont):
         axes = [ axisCont.datasetFromId( item[0] ) for item in axisCont.listDatasets() ]
         ctor = Histogram.__init__
         ctor(self, name = name,
+             unit = attrs['unit'],
              data = data,
              errors = errs,
              axes = axes,
@@ -779,7 +784,7 @@ class Histogram( AttributeCont):
         #2. check type code
         if errors is not None and data.typecode() != errors.typecode():
             msg = "Incompatible type codes between data (%s) and errors (%s)" \
-                  % (data.typeCode(), errors.typeCode())
+                  % (data.typecode(), errors.typecode())
             raise TypeError, msg
         self._typeCode = data.typecode()
 

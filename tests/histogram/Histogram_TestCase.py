@@ -151,6 +151,14 @@ class Histogram_TestCase(TestCase):
         detIDaxis = axis('detID', range(5))
         h = histogram( 'h', [detIDaxis])
         h[ {'detID':0 } ]
+
+        #get slice. units envolved
+        h = histogram( 'distance',
+                       [ ('x', [1,2,3] ),
+                         ],
+                       unit = 'meter', data = [1,2,3] )
+        h1 = h[(2,3)]
+        self.assertEqual( h1.unit(), h.unit() )
         return
 
 
@@ -349,7 +357,24 @@ class Histogram_TestCase(TestCase):
         for xi in x.binCenters():
             for yi in y.binCenters():
                 self.assertAlmostEqual( yi+1, hc[xi,yi][0] )
-        
+
+        #involve units
+        h1 = histogram(
+            'h1',
+            [ ('x', [1,2,3]),
+              ],
+            unit = 'meter',
+            data = [1,2,3],
+            errors = [1,2,3],
+            )
+        h2 = histogram(
+            'h2',
+            [ ('x', [1,2,3]),
+              ],
+            data = [1,1,1],
+            errors = [1,1,1],
+            unit = 'second',
+            )
         return
 
 
@@ -368,9 +393,7 @@ class Histogram_TestCase(TestCase):
         h = self._histogram - (1,2)
         self.assertVectorEqual( h[0.5, 1], (-1,2) )
 
-        print self._histogram
         h = (1,2)  - self._histogram
-        print h
         self.assertVectorEqual( h[0.5, 1], (1,2) )
 
         h = self._histogram - self._histogram2
@@ -429,6 +452,16 @@ class Histogram_TestCase(TestCase):
             axis1 = h1.axisFromName( axisName )
             self.assert_( axis.storage().compare( axis1.storage() ) )
             continue
+
+        from histogram import histogram
+        h2 = histogram(
+            'h2',
+            [ ('x', [1,2,3]),
+              ],
+            unit = 'meter' )
+        pickle.dump( h2, open( "tmp.pkl", 'w' ) )
+        h2a = pickle.load( open("tmp.pkl") )
+        
         return
 
 

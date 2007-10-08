@@ -114,6 +114,7 @@ def ndArray( *args, **kwds):
 
 def histogram( name, axes, data = None, errors = None, unit="1",
                data_type = "double", fromfunction = None):
+    
     """create a histogram out of given inputs
     
     axes are a list of axis, each axis could be specified by
@@ -352,7 +353,7 @@ def createDataset( name, unit='1', shape=[], data = None, data_type = "double",
     
     if data is not None:
         import numpy
-        array = numpy.array( data )
+        array = numpy.array( data, data_type )
         if shape: array.shape = shape
         from ndarray.NumpyNdArray import arrayFromNumpyArray as ndarrayFromNumpyArray
         storage = ndarrayFromNumpyArray( array )
@@ -381,16 +382,18 @@ def makeHistogram( name, axes, data, errs, unit="1", data_type = 'double'):
 
     # data and error bars
     shape = [ _axis.size() for _axis in _axes ]
-    if data is None: data=createDataset( 'data', unit, shape = shape,
-                                         data_type = data_type )
-    if errs is None: errs=createDataset( 'errors', unit*unit, shape = shape,
-                                         data_type = data_type )
+    if data is None: data=createDataset(
+        'data', unit, shape = shape,
+        data_type = data_type )
+    if errs is None: errs=createDataset(
+        'errors', unit*unit, shape = shape,
+        data_type = data_type )
 
     from DatasetBase import DatasetBase
     if isinstance( data, DatasetBase ): dataDS = data
-    else: dataDS = createDataset( "data", unit, data = data )
+    else: dataDS = createDataset( "data", unit, data = data, data_type = data_type )
     if isinstance( errs, DatasetBase ): errsDS = errs
-    else: errsDS = createDataset( "errs", unit**2, data = errs )
+    else: errsDS = createDataset( "errs", unit**2, data = errs, data_type = data_type )
     
     from Histogram import Histogram
     h = Histogram( name = name, unit = unit,

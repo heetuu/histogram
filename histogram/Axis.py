@@ -43,6 +43,8 @@ class Axis( Dataset):
         self._mapper = mapper
         if isinstance( mapper, DiscreteAxisMapper ): self._isDiscrete = True
         else: self._isDiscrete = False
+
+        self._cache = {}
         return
 
 
@@ -59,16 +61,18 @@ class Axis( Dataset):
 
     def binCenters( self):
         """list of bin centers"""
-        if '_binCenters' not in self.__dict__:
+        keyword = 'binCenters'
+        if keyword not in self._cache:
             bblist = self._storage.asList()
             if self.isDiscrete():
-                self._binCenters = bblist[:-1]
+                self._cache[keyword] = bblist[:-1]
             else:
                 numcells = len(bblist) - 1
-                self._binCenters = [ (bblist[i+1] + bblist[i])/2.0 for i in range(numcells)]
+                self._cache[keyword] = [
+                    (bblist[i+1] + bblist[i])/2.0 for i in range(numcells)]
                 pass
             pass
-        return self._binCenters
+        return self._cache[ keyword ]
 
 
     def binBoundaries( self):
@@ -78,10 +82,18 @@ class Axis( Dataset):
 
     def binBoundariesAsList( self):
         """binBoundariesAsList() -> list of bin boundaries"""
-        if '_binBoundaries' not in self.__dict__:
-            self._binBoundaries = self._storage.asList()            
-        return self._binBoundaries
+        keyword = 'binBoundaries'
+        if keyword not in self._cache:
+            self._cache[keyword] = self._storage.asList()            
+        return self._cache[keyword]
 
+
+    def changeUnit(self, unit):
+        Dataset.changeUnit(self, unit)
+        #!!! need to remove cache!!!
+        self._cache = {}
+        return
+    
 
     def isDiscrete(self): return self._isDiscrete
 

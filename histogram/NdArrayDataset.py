@@ -116,6 +116,22 @@ class Dataset( DatasetBase):
     def unit( self):
         """unit() -> unit for this axis"""
         return self._attributeCont.getAttribute('unit')
+
+
+    def changeUnit(self, unit):
+        '''change unit. update data array accordingly'''
+
+        unit = tounit( unit )
+        myunit = self.unit()
+        
+        try: unit + myunit
+        except: ValueError, "cannot set dataset of unit %s to new unit %s" % (
+            myunit, unit)
+
+        ratio = myunit/unit
+        self._storage *= ratio
+        self._setunit( unit )
+        return
     
 
     def copy(self):
@@ -205,7 +221,7 @@ class Dataset( DatasetBase):
             except: raise ValueError, "unit mismatch: %s and %s" % (
                 self.unit(), other)
             stor += other/self.unit()
-        elif isCompatibleDataset(self, other):
+        elif isUnitCompatibleDataset(self, other):
             stor += other.storage() * (other.unit()/self.unit())
         else:
             raise NotImplementedError , "%s + %s" % (
@@ -218,7 +234,7 @@ class Dataset( DatasetBase):
         stor = self.storage()
         if isNumber(other) and self.isunitless(): stor -= other/self.unit()
         elif isDimensional(other): stor -= other/self.unit()
-        elif isCompatibleDataset(self, other):
+        elif isUnitCompatibleDataset(self, other):
             stor -= other.storage() * (other.unit()/self.unit())
         else:
             raise NotImplementedError , "%s - %s" % (
@@ -264,7 +280,7 @@ class Dataset( DatasetBase):
     def sqrt(self):
         self.storage().sqrt()
         from math import sqrt
-        self.setAttribute( 'unit', sqrt(self.unit()) )
+        self.setAttribute( 'unit', self.unit()**(1./2) )
         return
 
 
@@ -316,8 +332,17 @@ class Dataset( DatasetBase):
         
 
     def __setitem__(self, s, rhs):
-        if isDataset( rhs ): rhs = rhs._storage * (rhs.unit()/self.unit())
-        self._storage[s] = rhs/self.unit()
+        if isDataset( rhs ):
+            rhs = rhs._storage * (rhs.unit()/self.unit())
+        else:
+            try: rhs /= self.unit()
+            except Exception , msg :
+                raise ValueError, \
+                      '__setitem__: the rhs must be either dataset or data array'\
+                      ' with unit. rhs = %s.\n'\
+                      '%s: %s' %  (rhs, msg.__class__.__name__, msg)
+            pass
+        self._storage[s] = rhs
         return rhs 
 
 
@@ -348,18 +373,11 @@ class Dataset( DatasetBase):
     pass # end of Class Dataset
 
 
+from _units import *
+
 
 def isDataset(ds):
     return isinstance(ds, DatasetBase)
-
-
-def isNumber(a):
-    return isinstance(a, float) or isinstance(a, int )
-
-
-def isDimensional(d):
-    from pyre.units.unit import unit
-    return isinstance( d, unit )
 
 
 def isCompatibleDataset(a,b):
@@ -372,6 +390,11 @@ def isCompatibleDataset(a,b):
         debug.log("imcompatible shape: %s, %s" % (a.shape(), b.shape()) )
         return False
 
+    return True
+
+
+def isUnitCompatibleDataset(a,b):
+    if not isCompatibleDataset(a,b): return False
     try: a.unit() + b.unit()
     except:
         debug.log("imcompatible units: %s, %s" % (a.unit(), b.unit()) )

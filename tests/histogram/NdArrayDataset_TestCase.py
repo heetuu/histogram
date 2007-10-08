@@ -180,6 +180,12 @@ class NdArrayDataset_TestCase(TestCase):
         self.assertVectorAlmostEqual( v, [4,16,36] ) 
         
         self.assertRaises( NotImplementedError , ds.__imul__, "a" )
+
+        ds1 = self.Dataset(
+            'time', unit = 'second',
+            shape = [3], storage = NdArray( 'double', [1,2,3] ),
+            )
+        ds *= ds1
         return
 
 
@@ -265,6 +271,15 @@ class NdArrayDataset_TestCase(TestCase):
         self.assertAlmostEqual( ds[1,1]/meter, 999 )
         ds[1,1] = 333 * meter
         self.assertAlmostEqual( ds[1,1]/meter, 333 )
+
+        #set slice with datasets
+        ds1v = NdArray( 'double', range(12) ); ds1v.setShape( (3,4) )
+        ds1 = self.Dataset(
+            name = "distance", unit = "meter", shape = [3,4], storage = ds1v )
+        ds2v = NdArray( 'double', range(4) ); ds2v.setShape( (2,2) )
+        ds2 = self.Dataset(
+            name = "distance", unit = "meter", shape = [2,2], storage = ds2v )
+        ds1[1:3, 1:3] = ds2
         return
 
 
@@ -300,6 +315,23 @@ class NdArrayDataset_TestCase(TestCase):
         ds1 = ds.sum(0)
         expected = NdArray( 'double', [3,5,7] )
         self.assert_( ds1.storage().compare( expected ) )
+        return
+
+
+    def testChangeUnit(self):
+        'Dataset: changeUnit'
+        storage = NdArray( 'double', range(3) )
+        ds = self.Dataset(name = "distance", unit = "meter", storage = storage )
+        ds.changeUnit( 'mm' )
+        self.assertVectorAlmostEqual( ds.storage().asNumarray(), [0, 1000, 2000] )
+        return
+
+
+    def testSqrt(self):
+        'Dataset: sqrt'
+        storage = NdArray( 'double', range(3) )
+        ds = self.Dataset(name = "distance", unit = "meter", storage = storage )
+        ds.sqrt()
         return
         
         
