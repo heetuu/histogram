@@ -280,6 +280,12 @@ class NdArrayDataset_TestCase(TestCase):
         ds2 = self.Dataset(
             name = "distance", unit = "meter", shape = [2,2], storage = ds2v )
         ds1[1:3, 1:3] = ds2
+
+        #set slice with one number
+        ds1v = NdArray( 'double', range(12) ); ds1v.setShape( (3,4) )
+        ds1 = self.Dataset(
+            name = "distance", unit = "meter", shape = [3,4], storage = ds1v )
+        ds1[1:3,1:3] = 1*meter
         return
 
 

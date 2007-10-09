@@ -260,6 +260,9 @@ class Histogram_TestCase(TestCase):
         # setslice: rhs is a lit of arrays. histogram is 1D
         data = array([1,2]); errs = data;
         histogram[ 0.5, () ] [ (1,3) ] = data, errs
+
+        # setslice: rhs is a tuple of two numbers
+        histogram[ 0.5, () ] [ (1,3 )]  = 0., 0.
         
         #setitem using dictionary
         histogram[ {'E':1.5, 'tubeId':3} ] = 3, 3
