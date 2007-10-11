@@ -5,8 +5,8 @@
 namespace DANSE{
 
   struct Event {
-    uint tof;
-    uint pixelID;
+    unsigned int tof;
+    unsigned int pixelID;
   };
 
 }
