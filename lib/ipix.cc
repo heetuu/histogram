@@ -57,9 +57,15 @@ int run( const char *filename,  size_t Nevents,  unsigned int pixbegin, unsigned
 }
 
 
+void help()
+{
+  std::cout << "ipix event-data-filename Nevents pixbegin pixend pixstep output-filename" << std::endl;
+}
+
+
 int main( int argc, char ** argv )
 {
-  assert (argc == 7 );
+  if (argc != 7 ) {help(); exit(1);}
 
   char *filename = argv[1];
 

@@ -54,9 +54,15 @@ int run( const char *filename, size_t Nevents,
 }
 
 
+void help()
+{
+  std::cout << "e2Ipt event-data-filename Nevents tofbegin tofend tofstep output-filename" << std::endl;
+}
+
+
 int main(int argc, char ** argv)
 {
-  assert (argc == 7 );
+  if (argc != 7 ) {help(); exit(1);}
 
   char *filename = argv[1];
 

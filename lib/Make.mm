@@ -26,7 +26,7 @@ PROJ_SRCS = \
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # build the library
 
-all: $(PROJ_SAR) export
+all: $(PROJ_SAR) export bins
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -58,6 +58,22 @@ EXPORT_HEADERS = \
 
 EXPORT_LIBS = $(PROJ_SAR)
 EXPORT_BINS = $(PROJ_DLL)
+
+
+l2b: l2b.cc littleEndian2bigEndian.h
+	g++ -o l2b l2b.cc
+
+itof: itof.cc histogrammer.cc histogrammer.h
+	g++ -o itof itof.cc histogrammer.cc
+
+ipix: ipix.cc histogrammer.cc histogrammer.h
+	g++ -o ipix ipix.cc histogrammer.cc
+
+e2Ipt: e2Ipt.cc eventsToIpt.cc eventsToIpt.h histogrammer.cc histogrammer.h
+	g++ -o e2Ipt e2Ipt.cc histogrammer.cc eventsToIpt.cc
+
+
+bins: l2b itof ipix
 
 
 # version

@@ -56,10 +56,16 @@ int run( const char *filename,  size_t Nevents,  unsigned int tofbegin, unsigned
   return 0;
 }
 
+void help()
+{
+  std::cout << "itof event-data-filename Nevents tofbegin tofend tofstep output-filename" << std::endl;
+  std::cout << "  - tof: 100us" << std::endl;
+}
+
 
 int main( int argc, char ** argv )
 {
-  assert (argc == 7 );
+  if (argc != 7 ) { help(); exit(1); }
 
   char *filename = argv[1];
 
