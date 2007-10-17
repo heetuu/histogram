@@ -20,9 +20,10 @@ namespace ARCS_EventData {
     /// pixelPositions: mapping of pixelID --> position 
     /// tofUnit: unit of tof. for example, for 100ns, tofUnit = 1e-7
     /// mod2sample: distance from moderator to sample. unit: meter
-    Event2d( const double * pixelPositions, double tofUnit=1e-7, double mod2sample=13.5 ) 
+    Event2d( const double * pixelPositions, unsigned int ntotpixels = (1+115)*8*128,
+	     double tofUnit=1e-7, double mod2sample=13.5 ) 
       : m_pixelPositions( pixelPositions ), m_tofUnit( tofUnit ),
-	m_mod2sample( mod2sample )
+	m_mod2sample( mod2sample ), m_ntotpixels(ntotpixels)
     {}
     
     virtual void operator () ( const Event & e, double &d ) const;
@@ -31,6 +32,7 @@ namespace ARCS_EventData {
     const double * m_pixelPositions;
     double m_tofUnit;
     double m_mod2sample;
+    double m_ntotpixels;
   };
   
 }

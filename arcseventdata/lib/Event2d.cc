@@ -1,4 +1,5 @@
 #include <math.h>
+#include <iostream>
 #include "Event.h"
 #include "Event2d.h"
 
@@ -9,6 +10,11 @@ namespace ARCS_EventData {
     ( const Event & e, double &d ) const
   {
     const unsigned int & pixelID = e.pixelID;
+    if (pixelID<0 || pixelID>=m_ntotpixels) {
+      std::cout << "pixel ID out of bound: " << pixelID;
+      d = 0.0;
+      return;
+    }
     const unsigned int & tofchannelno = e.tof;
 
     const double *ppos = m_pixelPositions + 3*pixelID;

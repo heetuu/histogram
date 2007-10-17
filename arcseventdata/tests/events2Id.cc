@@ -30,10 +30,8 @@ double *readPixelPositions( const char * infilename )
   int npacks = 115, ndetsperpack = 8, npixelsperdet = 128, nbytesperdouble=8, ndoublepervector=3;
   assert(length==(npacks+1)*ndetsperpack*npixelsperdet*ndoublepervector*nbytesperdouble);
 
-  std::cout << "OK" << std::endl;
   // read
   char *buffer = new char[length];
-  std::cout << "OK" << std::endl;
   is.read( buffer, length );
   is.close();
 
@@ -57,8 +55,6 @@ int run( const char *eventfilename,  size_t Nevents,
 
   i_d.clear();
 
-  std::cout << "OK" << std::endl;
-  
   double *pixelPositions = readPixelPositions( pixelPositionsFilename );
   Event2d e2d( pixelPositions );
   events2Ix< Event2d, Idspacing > (pevents, Nevents, e2d, i_d);
