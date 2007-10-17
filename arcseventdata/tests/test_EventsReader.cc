@@ -1,0 +1,24 @@
+#include <iostream>
+#include <fstream>
+
+#include "arcseventdata/EventsReader.h"
+
+int main()
+{
+
+  using namespace ARCS_EventData;
+
+  EventsReader reader( "events.dat" );
+
+  size_t N = 10;
+
+  Event * pevents = reader.read( N );
+
+  for (int i=0; i<N; i++) {
+    std::cout << pevents[i].tof << ", " << pevents[i].pixelID << std::endl ;
+  }
+
+  delete [] pevents;
+
+  return 0;
+}

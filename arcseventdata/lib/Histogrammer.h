@@ -15,7 +15,11 @@
 #ifndef H_ARCSEVENTDATA_HISTOGRAMMER
 #define H_ARCSEVENTDATA_HISTOGRAMMER
 
+#include "histogram/AxisMapper.h"
+
 namespace ARCS_EventData{
+
+  using namespace DANSE;
 
   struct Event;
 
@@ -31,7 +35,13 @@ namespace ARCS_EventData{
     void operator() ( const Event & e )
     {
       m_e2q( e, m_d );
-      m_grid( m_d ) += 1;
+      try {
+	m_grid( m_d ) += 1;
+      }
+      catch (OutOfBound err)  {
+	std::cout << m_d << ": out of bound" << std::endl;
+      }
+	
     }
     
     void clear() 

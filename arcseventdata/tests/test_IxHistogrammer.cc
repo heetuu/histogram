@@ -1,13 +1,13 @@
 #include <cstring>
 #include <iostream>
 
-#include "histogram/Ix.h"
 #include "arcseventdata/Event.h"
 #include "arcseventdata/Event2Quantity.h"
-#include "arcseventdata/Histogrammer.h"
+#include "arcseventdata/IxHistogrammer.h"
 
 
 using namespace ARCS_EventData;
+using namespace DANSE;
 
 class Event2TofChannel: public Event2Quantity1<unsigned int>
 {
@@ -20,30 +20,19 @@ class Event2TofChannel: public Event2Quantity1<unsigned int>
 
 
 int main()
-{
-  
-  using namespace ARCS_EventData;
-  using namespace DANSE;
-  
-  typedef Ix<unsigned int, unsigned int> Itof;
-  
-  
-  Itof itof( 1000, 10000, 1000 );
-  
+{  
   Event2TofChannel e2t;
-  
-  Histogrammer1<Itof, Event2TofChannel, unsigned int> her( itof, e2t );
+  IxHistogrammer< unsigned int, Event2TofChannel, unsigned int > her( 1000, 8000, 1000, e2t );
   her.clear();
   
   Event e = { 3500, 2048 };
   
   her( e );
-  
-  assert (itof.intensities[2] == 1);
 
-  delete [] itof.intensities;
+  assert (her.Iarray()[2] == 1);
+
+  delete [] her.Iarray();
 
   return 0;
-  
 }
 

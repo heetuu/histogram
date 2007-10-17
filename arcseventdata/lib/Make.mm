@@ -52,7 +52,13 @@ endif
 EXPORT_HEADERS = \
 	Event.h \
 	Event2Quantity.h \
+	EventsReader.h \
 	Histogrammer.h \
+	Itof.h \
+	IxHistogrammer.h \
+	events2histogram.h \
+	events2Ix.h \
+	mappers.h \
 
 EXPORT_LIBS = $(PROJ_SAR)
 EXPORT_BINS = $(PROJ_DLL)
