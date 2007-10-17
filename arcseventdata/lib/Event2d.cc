@@ -11,7 +11,7 @@ namespace ARCS_EventData {
   {
     const unsigned int & pixelID = e.pixelID;
     if (pixelID<0 || pixelID>=m_ntotpixels) {
-      std::cout << "pixel ID out of bound: " << pixelID;
+      std::cout << "pixel ID out of bound: " << pixelID << std::endl;
       d = 0.0;
       return;
     }
@@ -28,9 +28,11 @@ namespace ARCS_EventData {
     double velocity = (m_mod2sample+sample2pixel)/tof;
     double lambda = 2*pi/(velocity * V2K);
 
-    double twotheta = acos( z / sample2pixel );
+    double twotheta = acos( x / sample2pixel );
 
     d = lambda/2/sin(twotheta/2);
+
+//    std::cout << "pixelID=" << pixelID << ", x,y,z=" << x << "," << y << "," << z << ", sample2pixel = " << sample2pixel << ", mo2sample=" << m_mod2sample << "tof = " << tof << "velocity = " << velocity << "lambda=" << lambda << "twotheta = " << twotheta << ", d = " << d << std::endl;
   }
   
 }
