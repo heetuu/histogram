@@ -24,10 +24,11 @@ namespace ARCS_EventData {
 
     double tof = tofchannelno * m_tofUnit;
 
-    double velocity = m_mod2sample/tof;
+    double sample2pixel = sqrt(x*x+y*y+z*z);
+    double velocity = (m_mod2sample+sample2pixel)/tof;
     double lambda = 2*pi/(velocity * V2K);
 
-    double twotheta = acos( z /sqrt(x*x+y*y+z*z) );
+    double twotheta = acos( z / sample2pixel );
 
     d = lambda/2/sin(twotheta/2);
   }
