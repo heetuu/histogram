@@ -20,7 +20,7 @@ PROJ_TMPDIR = $(BLD_TMPDIR)/$(PROJECT)/$(PACKAGE)
 PROJ_CLEAN += $(PROJ_SAR) $(PROJ_DLL)
 
 PROJ_SRCS = \
-    hello.cc
+    NdArray.cc
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # build the library
@@ -51,7 +51,12 @@ export:: export-headers export-libraries
 endif
 
 EXPORT_HEADERS = \
-    hello.h
+	AxisMapper.h \
+	DataGrid1D.h \
+	DataGrid2D.h \
+	EvenlySpacedAxisMapper.h \
+	Ix.h \
+	NdArray.h \
 
 EXPORT_LIBS = $(PROJ_SAR)
 EXPORT_BINS = $(PROJ_DLL)
