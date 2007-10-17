@@ -20,6 +20,8 @@ PROJ_TMPDIR = $(BLD_TMPDIR)/$(PROJECT)/$(PACKAGE)
 PROJ_CLEAN += $(PROJ_SAR) $(PROJ_DLL)
 
 PROJ_SRCS = \
+	Event2d.cc \
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # build the library
@@ -52,8 +54,10 @@ endif
 EXPORT_HEADERS = \
 	Event.h \
 	Event2Quantity.h \
+	Event2d.h \
 	EventsReader.h \
 	Histogrammer.h \
+	Idspacing.h \
 	Itof.h \
 	IxHistogrammer.h \
 	events2histogram.h \
