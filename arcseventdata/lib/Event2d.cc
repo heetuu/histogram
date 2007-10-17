@@ -1,6 +1,6 @@
 #include <math.h>
-#include "event.h"
-#include "event2d.h"
+#include "Event.h"
+#include "Event2d.h"
 
 namespace ARCS_EventData {
   
