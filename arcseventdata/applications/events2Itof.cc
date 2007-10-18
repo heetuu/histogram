@@ -6,6 +6,7 @@
 #include "arcseventdata/events2Ix.h"
 #include "arcseventdata/Itof.h"
 #include "arcseventdata/EventsReader.h"
+#include "arcseventdata/ioutils.h"
 
 
 int run( const char *filename,  size_t Nevents, 
@@ -20,23 +21,21 @@ int run( const char *filename,  size_t Nevents,
 
   Event * pevents = reader.read( Nevents );
 
+  // make the histogram
   Itofchannel itof( tofbegin, tofend, tofstep );
   itof.clear();
   
+  // histogramming...
   events2Ix< Event2TofChannel, Itofchannel > (pevents, Nevents, e2tc, itof);
 
-  unsigned int * intensities = itof.intensities;
-  
+  // no longer need events
   delete [] pevents;
 
-  std::ofstream of( outfilename );
+  // save histogram to a 2col ascii
+  dumpIx<unsigned int, unsigned int>( itof, outfilename );
 
-  for (int i=0; i<itof.size; i++) {
-    of << tofbegin + i * tofstep + tofstep/2 << "\t" << itof.intensities[i] << std::endl;
-  }
-
-  of.close();
-
+  // clean up
+  unsigned int * intensities = itof.intensities;
   delete [] intensities;
 
   return 0;
@@ -45,7 +44,8 @@ int run( const char *filename,  size_t Nevents,
 void help()
 {
   std::cout << "itof event-data-filename Nevents tofbegin tofend tofstep output-filename" << std::endl;
-  std::cout << "  - tof: 100us" << std::endl;
+  std::cout << " * units: " << std::endl
+	    << "   tof: 100us" << std::endl;
 }
 
 

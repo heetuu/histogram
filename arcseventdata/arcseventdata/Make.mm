@@ -24,7 +24,9 @@ all: export
 # export
 
 EXPORT_PYTHON_MODULES = \
-    __init__.py
+	histogramFrom2colascii.py \
+	read2colascii.py \
+	__init__.py \
 
 
 export:: export-python-modules

@@ -58,10 +58,13 @@ EXPORT_HEADERS = \
 	EventsReader.h \
 	Histogrammer.h \
 	Idspacing.h \
+	Ipix.h \
 	Itof.h \
 	IxHistogrammer.h \
 	events2histogram.h \
 	events2Ix.h \
+	ioutils.h \
+	littleEndian2bigEndian.h \
 	mappers.h \
 
 EXPORT_LIBS = $(PROJ_SAR)

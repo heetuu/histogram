@@ -12,8 +12,18 @@
 # 
 
 
-def copyright():
-    return "arcseventdata pyre module: Copyright (c) 1998-2005 Michael A.G. Aivazis";
+def convert( filename, name = None,
+             xname = 'x', xunit = '1',
+             yunit = '1'):
+    import read2colascii as r2
+    x, y = r2.read( filename )
+
+    if name is None:
+        import os
+        name = os.path.splitext( os.path.basename( filename ) )[0]
+        
+    from histogram import histogram
+    return histogram( name, [ (xname, x) ], data = y, unit = yunit )
 
 
 # version

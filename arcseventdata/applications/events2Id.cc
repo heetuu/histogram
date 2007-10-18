@@ -7,6 +7,7 @@
 #include "arcseventdata/events2Ix.h"
 #include "arcseventdata/Idspacing.h"
 #include "arcseventdata/EventsReader.h"
+#include "arcseventdata/ioutils.h"
 
 
 /// convert event data file to I(d) histogram
@@ -63,13 +64,8 @@ int run( const char *eventfilename,  size_t Nevents,
   
   delete [] pevents;
 
-  std::ofstream of( outfilename );
-
-  for (int i=0; i<i_d.size; i++) {
-    of << dbegin + i * dstep + dstep/2 << "\t" << i_d.intensities[i] << std::endl;
-  }
-
-  of.close();
+  // save histogram to a 2col ascii
+  dumpIx<double, unsigned int>( i_d, outfilename );
 
   delete [] pixelPositions;
   delete [] intensities;
@@ -79,8 +75,9 @@ int run( const char *eventfilename,  size_t Nevents,
 
 void help()
 {
-  std::cout << "id event-data-filename Nevents pixel-positions-filename dbegin dend dstep output-filename" << std::endl;
-  std::cout << "  - d: 100us" << std::endl;
+  std::cout << "idspacing event-data-filename Nevents pixel-positions-filename dbegin dend dstep output-filename" << std::endl;
+  std::cout << " * units: " << std::endl
+	    << "   d: 1 Angstrom" << std::endl;
 }
 
 
