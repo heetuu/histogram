@@ -33,11 +33,17 @@ namespace ARCS_EventData {
 	     double tofUnit=1e-7, double mod2sample=13.5 ) 
       : m_pixelPositions( pixelPositions ), m_tofUnit( tofUnit ),
 	m_mod2sample( mod2sample ), m_ntotpixels(ntotpixels)
-    {}
+    {
+      /*
+      std::cout << "mod2sample distance = " << m_mod2sample << std::endl;
+      std::cout << "number of total pixels = " << m_ntotpixels << std::endl;
+      */
+    }
     
     virtual void operator () ( const Event & e, double &d ) const;
       
   private:
+
     const double * m_pixelPositions;
     double m_tofUnit;
     double m_mod2sample;

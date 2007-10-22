@@ -42,6 +42,18 @@ namespace ARCS_EventData{
   
   const Event2pixelID e2pixelID;
 
+  class Event2pixelIDtofChannel: public Event2Quantity2<unsigned int, unsigned int>
+  {
+  public:
+    void operator() ( const Event & e, unsigned int & pixelID, unsigned int & tof ) const 
+    {
+      pixelID = e.pixelID;
+      tof = e.tof;
+    }
+  };
+  
+  const Event2pixelIDtofChannel e2pt;
+
 }
 
 

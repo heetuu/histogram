@@ -32,15 +32,18 @@ int main()
   is.read( buffer, length );
 
   // 
-  Event2d event2d( (const double *)buffer, 1.e-7, 13.5 ) ;
+  Event2d event2d( (const double *)buffer ) ;
   
   Event e = {30000, 2048};
   
   double d;
   event2d( e, d );
 
+  std::cout << "d=" << d << std::endl;
   assert (d>0.1 && d<2);
   
   delete [] buffer;
   return 0;
+
 }
+

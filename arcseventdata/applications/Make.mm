@@ -56,6 +56,9 @@ ipix: events2Ipix.cc $(BLD_LIBDIR)/libarcseventdata.$(EXT_SAR)
 idspacing: events2Id.cc $(BLD_LIBDIR)/libarcseventdata.$(EXT_SAR)
 	$(CXX) $(CXXFLAGS) $(LCXXFLAGS) -o $@ events2Id.cc $(PROJ_LIBRARIES)
 
+ipixtof: events2Ipixtof.cc $(BLD_LIBDIR)/libarcseventdata.$(EXT_SAR)
+	$(CXX) $(CXXFLAGS) $(LCXXFLAGS) -o $@ events2Ipixtof.cc $(PROJ_LIBRARIES)
+
 l2b: events2Id.cc $(BLD_LIBDIR)/libarcseventdata.$(EXT_SAR)
 	$(CXX) $(CXXFLAGS) $(LCXXFLAGS) -o $@ l2b.cc $(PROJ_LIBRARIES)
 
@@ -63,6 +66,7 @@ l2b: events2Id.cc $(BLD_LIBDIR)/libarcseventdata.$(EXT_SAR)
 PROJ_CPPEXE = \
 	itof \
 	ipix \
+	ipixtof \
 	idspacing \
 	l2b \
 
@@ -70,6 +74,7 @@ PROJ_CPPEXE = \
 EXPORT_PYAPPS = \
 	idspacing.py \
 	ipix.py \
+	ipixtof.py \
 	itof.py \
 	createmap-pixelID2position.py \
 	numpyarray2binary.py \

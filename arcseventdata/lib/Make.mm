@@ -59,10 +59,12 @@ EXPORT_HEADERS = \
 	Histogrammer.h \
 	Idspacing.h \
 	Ipix.h \
+	Ipixtof.h \
 	Itof.h \
 	IxHistogrammer.h \
 	events2histogram.h \
 	events2Ix.h \
+	events2Ixy.h \
 	ioutils.h \
 	littleEndian2bigEndian.h \
 	mappers.h \

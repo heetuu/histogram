@@ -16,8 +16,8 @@ PROJECT = arcseventdata
 # directory structure
 
 BUILD_DIRS = \
-    libarcseventdata \
-    arcseventdatamodule \
+    lib \
+    module \
     arcseventdata \
 
 OTHER_DIRS = \
@@ -45,3 +45,4 @@ tidy::
 # $Id$
 
 # End of file
+
