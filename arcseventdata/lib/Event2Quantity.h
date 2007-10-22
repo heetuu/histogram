@@ -19,11 +19,13 @@ namespace ARCS_EventData{
 
   struct Event;
 
-  /// Event2Quantity1
-  /// convert event to a quantity
-  /// Forexample, 
-  ///   event --> pixel ID
-  ///   event --> tof 
+  /// Event2Quantity1: convert event to a scalar quantity.
+  /// Class to convert an neutron event (Event object) to a scalar quantity.
+  /// For example, 
+  ///   * event --> pixel ID
+  ///   * event --> tof
+  /// This is an abstract base class. 
+  /// Solid subclasses will be used by histogrammers (objects of Histogrammer1). 
   template <typename DataType>
   class Event2Quantity1 {
   public:
@@ -31,11 +33,13 @@ namespace ARCS_EventData{
     virtual ~Event2Quantity1() {} ;
   };
 
-  /// Event2Quantity2
-  /// convert event to two quantities
+  /// Event2Quantity2: convert event to two scalar quantities.
+  /// Class to convert an neutron event (Event object) to two scalar quantities.
   /// Forexample, 
   ///   event --> pixel ID, tof
   ///   event --> Q, E
+  /// This is an abstract base class.
+  /// Solid subclasses will be used by histogrammers (objects of Histogrammer2). 
   template <typename DataType1, typename DataType2>
   class Event2Quantity2 {
   public:

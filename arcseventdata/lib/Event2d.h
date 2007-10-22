@@ -3,6 +3,10 @@
 
 #include "Event2Quantity.h"
 
+/// Convert neutron Event to d-spacing
+/// Most useful for reduction of diffraction data.
+
+
 namespace ARCS_EventData {
   
   struct Event;
@@ -12,8 +16,13 @@ namespace ARCS_EventData {
   const double pi = 3.1415926535897;
 
 
-  /// Event2d
-  /// calculated d-spacing (diffraction) of an event
+  /// Event2d: calculated d-spacing (diffraction) of an event.
+  /// Functor to calculate d-spacing from neutron event.
+  /// The is most useful for diffraction reduction.
+  /// The Bragg's law: 2dsintheta = lambda
+  /// so d = lambda/2sintheta.
+  /// lambda can be infered from tof, and 2theta is the scattering angle.
+  /// This is a fairly easy computation.
   class Event2d: public Event2Quantity1<double> {
 
   public:

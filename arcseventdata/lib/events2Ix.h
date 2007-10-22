@@ -22,7 +22,7 @@ namespace ARCS_EventData{
 
   struct Event;
   
-  ///
+  /// 
   /// Event2X: a Event2Quantity class
   /// Ix: a DataGrid1D class or  Ix class
   /// IDataType: data type of intensity
