@@ -26,6 +26,8 @@ namespace ARCS_EventData {
   class Event2d: public Event2Quantity1<double> {
 
   public:
+    /// ctor.
+    /// Constructor. 
     /// pixelPositions: mapping of pixelID --> position 
     /// tofUnit: unit of tof. for example, for 100ns, tofUnit = 1e-7
     /// mod2sample: distance from moderator to sample. unit: meter
