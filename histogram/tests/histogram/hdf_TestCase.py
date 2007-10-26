@@ -29,9 +29,11 @@ class hdf_TestCase(TestCase):
                       [('x', arange(0,100, 1.) ),
                        ('y', arange(100, 180, 1.) ),]
                       )
+
+        filename = 'test.h5'
         import os
-        os.remove( 'test.h5' )
-        dump( h, 'test.h5', '/', mode = 'c' )
+        if os.path.exists( filename): os.remove( filename )
+        dump( h, filename, '/', mode = 'c' )
         return
 
 

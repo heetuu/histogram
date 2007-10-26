@@ -186,6 +186,13 @@ class Histogram_TestCase(TestCase):
             h.errors().storage().asList(), [0,1,0,0,0,0] )
 
         self.assertVectorAlmostEqual( h[1,5], (1,1) )
+
+        h = histogram( 'h', [('a', [1,2,3])] )
+        h[1] = 10,10
+
+        h = histogram( 'h', [('a', [1,2,3])], unit = 'meter')
+        from pyre.units.length import meter
+        h[1] = 10*meter,10*meter*meter
         return
 
 

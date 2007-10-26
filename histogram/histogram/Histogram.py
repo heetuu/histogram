@@ -80,60 +80,83 @@ class Histogram( AttributeCont):
         h[ (), () ]
         h[ (None, 4.0),  (999., None ) ]
         """
-        if self.errors() is None: raise NotImplementedError , "__getitem__: errors is None"
-        
-        if self.dimension() == 1 and not isinstance(s, dict): s = (s,)
+        if self.errors() is None:
+            raise NotImplementedError , "__getitem__: errors is None"
+
+        # if s is iterable, we should assume that it is trying to do slicing.
+        # This also means no axis can use iterables as values.
+        if self.dimension() == 1 and '__iter__' not in dir(s): s = (s,)
+
+        # We also allow use of dictionary. This is a convenient and flexible way
+        # to get or set a slice.
         if isinstance(s, dict): s = _slicingInfosFromDictionary(s, self)
         else: s = _makeSlicingInfos( s, self.dimension() )
-        #if isinstance(s, list): s = tuple(s) # expect tuple
+        #at this point, s is a tuple of SlicingInfo instances.
+
+        # check sanity of inputs
+        if not isinstance(s, tuple) or len(s) != self.dimension():
+            raise NotImplementedError , "Histogram[ %s ]. my dimension: %s" % (
+                s, self.dimension())
+
+        # a more meaningful name
+        slicingInfos = s
+
+        # slicingInfo tuple --> a tuple of index slices
+        indexSlices = self.slicingInfos2IndexSlices( slicingInfos )
         
-        if isinstance(s, tuple) and len(s) == self.dimension():
-            slicingInfos = s
-            indexSlices = self.slicingInfos2IndexSlices( slicingInfos )
-            #the following line will fail if a dataset is None
-            #should define a special NoneDataset to solve this problem
-            newdatasets = [dataset[indexSlices] for dataset in self.datasets()]
-            if isNumber(newdatasets[0]) or isDimensional(newdatasets[0]):
-                return newdatasets
+        #the following line will fail if a dataset is None
+        #should define a special NoneDataset to solve this problem
+        newdatasets = [dataset[indexSlices] for dataset in self.datasets()]
 
-            newAttrs = self._attributes.copy(); newAxes = []
-            for slicingInfo, name in zip(slicingInfos, self.axisNameList()):
-                axis = self.axisFromName( name )
-                if not isSlicingInfo( slicingInfo ):
-                    # if it is not a slicingInfo instance, it must be a value indexable
-                    # in this axis. This is already tested in method "slicingInfo2IndexSlices"
-                    value = '%s' % slicingInfo
-                    name = axis.name()
-                    newAttrs[name] = value
-                else:
-                    newAxes.append( axis[ slicingInfo ] )
-                continue
-            
-            #new name
-            newName = "%s in %s" % (
-                self.name(),
-                ["%s(%s)"%(axisName, slicingInfo) for axisName, slicingInfo \
-                 in zip(self.axisNameList(), slicingInfos)])
-            
-            new = Histogram( name = newName, unit = self.unit(),
-                             data = newdatasets[0], errors = newdatasets[1],
-                             axes = newAxes, attributes = newAttrs)
-            for i in range(2, len(newdatasets)):
-                ds = newdatasets[i]
-                new.addDataset( ds.name(), ds )
-                continue
-            
-            return new
-            
-        raise NotImplementedError , "Histogram[ %s ]. my dimension: %s" % (
-            s, self.dimension())
+        #if requested for item instead of slice, return the item now.
+        if isNumber(newdatasets[0]) or isDimensional(newdatasets[0]):
+            return newdatasets
 
+        #meta data need to be passed to the new histogram
+        newAttrs = self._attributes.copy()
+
+        #axes of new histogram
+        newAxes = []
+        for slicingInfo, name in zip(slicingInfos, self.axisNameList()):
+            axis = self.axisFromName( name )
+            if not isSlicingInfo( slicingInfo ):
+                # if it is not a slicingInfo instance,
+                # it must be a value indexable in this axis.
+                # This is already tested in method "slicingInfo2IndexSlices"
+                value = '%s' % slicingInfo
+                name = axis.name()
+                newAttrs[name] = value
+            else:
+                newAxes.append( axis[ slicingInfo ] )
+                pass
+            continue
+            
+        #name of new histogram
+        newName = "%s in %s" % (
+            self.name(),
+            ["%s(%s)"%(axisName, slicingInfo) for axisName, slicingInfo \
+             in zip(self.axisNameList(), slicingInfos)])
+
+        #new histogram
+        new = Histogram( name = newName, unit = self.unit(),
+                         data = newdatasets[0], errors = newdatasets[1],
+                         axes = newAxes, attributes = newAttrs)
+
+        #addtional datasets. This is not tested yet!!!
+        #probably we should really limit histogram to have only two datasets!!!
+        for i in range(2, len(newdatasets)):
+            ds = newdatasets[i]
+            new.addDataset( ds.name(), ds )
+            continue
+
+        return new
+            
 
     def __setitem__(self, indexes_or_slice, v):
         if self.errors() is None: raise NotImplementedError , "__setitem__: errors is None"
         
-        if self.dimension() == 1 and not isinstance(indexes_or_slice, dict):
-            s = (indexes_or_slice,)
+        if self.dimension() == 1 and '__iter__' not in dir(indexes_or_slice):
+            indexes_or_slice = (indexes_or_slice,)
 
         if isinstance(indexes_or_slice, dict):
             s = _slicingInfosFromDictionary(indexes_or_slice, self)
@@ -172,7 +195,7 @@ class Histogram( AttributeCont):
                 return v
 
             #2. slice
-            shape = aslice.shape() #get shape
+            #shape = aslice.shape() #get shape
             # for slice, we would require the right hand side to be a list of datasets
             if isHistogram( v ): v = v.data(), v.errors()
             
@@ -793,7 +816,7 @@ class Histogram( AttributeCont):
         dunit = tounit( data.unit() )
         eunit = dunit*dunit
         if errors: eunit = tounit( errors.unit() )
-        if unit != dunit or unit*unit != eunit:
+        if not _equalUnit( unit, dunit) or not _equalUnit( unit*unit, eunit ):
             msg = "Unit mismatch: histogram unit: %s, data unit: %s, "\
                   "errors unit: %s." % (
                 unit, dunit, eunit )
@@ -818,6 +841,11 @@ class Histogram( AttributeCont):
     pass # end of Histogram
 
 
+
+def _equalUnit( u1, u2 ):
+    try: u1 + u2
+    except: return False
+    return u1 == u2
 
 
 def _indexFromIndexes( indexes, shape ):
@@ -860,7 +888,7 @@ def _makeSlicingInfos(s, dim):
         return tuple([ _makeSlicingInfo( i ) for i in s ])
     if dim != 1:
         raise IndexError , "Dimension of slicing parameters does not match dimension of histogram: slice %s (dimension=%s), histogram dimension %s" % (s, len(s), dim)
-    return _makeSlicingInfo( s )
+    return _makeSlicingInfo( s ),
 
 
 def _makeSlicingInfo( inputs ):

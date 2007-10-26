@@ -11,14 +11,14 @@ def plotHist( h, min = None, max = None ):
 def plotPklFile( filename, min = None, max = None ):
     from histogram.hpickle import load
     h = load( filename )
-    plotHist( h )
+    plotHist( h, min = min, max = max )
     return
 
 
 def plotH5File( h5filename, pathinh5file, min = None, max = None ):
     from histogram.hdf import load
     h = load( h5filename, pathinh5file )
-    plotHist( h )
+    plotHist( h , min = min, max = max )
     return
 
 
@@ -38,6 +38,9 @@ def main():
         raise "should not reach here"
 
     filename = args[0]
+    min = options.min
+    max = options.max
+    
     if filename.endswith( 'h5' ):
         msg = "path to the histogram inside the h5 file '%s' is needed\n\n" % (
             filename, )

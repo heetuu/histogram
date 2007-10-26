@@ -109,6 +109,9 @@ class Axis( Dataset):
 
 
     def __getitem__(self, s):
+        '''axis[ SlicingInfo( a,b ) ] --> a slice of the original axis
+        axis[ index ] --> binboundaries[index] * unit
+        '''
         if not isSlicingInfo(s): return Dataset.__getitem__(self, s)
         slicingInfo = s
         indexStart, indexEnd = self.slicingInfo2IndexSlice( slicingInfo )

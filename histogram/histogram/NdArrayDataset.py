@@ -223,9 +223,13 @@ class Dataset( DatasetBase):
             stor += other/self.unit()
         elif isUnitCompatibleDataset(self, other):
             stor += other.storage() * (other.unit()/self.unit())
+        elif isDataset(other):
+            raise ValueError, "Incompatible datasets: %s, %s" (
+                self, other)
         else:
             raise NotImplementedError , "%s + %s" % (
-                self.__class__.__name__, other.__class__.__name__)
+                self.__class__.__name__, other.__class__.__name__, 
+                )
         return self
 
 
@@ -338,7 +342,7 @@ class Dataset( DatasetBase):
             try: rhs /= self.unit()
             except Exception , msg :
                 raise ValueError, \
-                      '__setitem__: the rhs must be either dataset or data array'\
+                      '__setitem__: the rhs must be either dataset or numpy data array'\
                       ' with unit. rhs = %s.\n'\
                       '%s: %s' %  (rhs, msg.__class__.__name__, msg)
             pass
