@@ -346,7 +346,10 @@ class Dataset( DatasetBase):
                       ' with unit. rhs = %s.\n'\
                       '%s: %s' %  (rhs, msg.__class__.__name__, msg)
             pass
-        self._storage[s] = rhs
+        try:
+            self._storage[s] = rhs
+        except:
+            raise ValueError , "rhs = %s" % (rhs, )
         return rhs 
 
 

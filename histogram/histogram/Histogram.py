@@ -154,68 +154,72 @@ class Histogram( AttributeCont):
 
     def __setitem__(self, indexes_or_slice, v):
         if self.errors() is None: raise NotImplementedError , "__setitem__: errors is None"
-        
+
+        # if indexes_or_slice is iterable,
+        # we should assume that it is trying to do slicing.
+        # This also means no axis can use iterables as values.
         if self.dimension() == 1 and '__iter__' not in dir(indexes_or_slice):
             indexes_or_slice = (indexes_or_slice,)
 
+        # We also allow use of dictionary. This is a convenient and flexible way
+        # to get or set a slice.
         if isinstance(indexes_or_slice, dict):
             s = _slicingInfosFromDictionary(indexes_or_slice, self)
         else:
             s = _makeSlicingInfos( indexes_or_slice, self.dimension() )
             pass # end if
         
-        #if isinstance(s, list): s = tuple(s) # expect tuple
-        if isSlicingInfo(s): s = (s,)
+        #at this point, s is a tuple of SlicingInfo instances.
+        slicingInfos = s
+
+        # check sanity of inputs
+        if not isinstance(s, tuple) or len(s) != self.dimension():
+            raise NotImplementedError , "Histogram[ %s ]. my dimension: %s" % (
+                s, self.dimension())
 
         mydatasets = self.datasets()
         
-        if isinstance(s, tuple) and len(s) == self.dimension():
-            slicingInfos = s
-            indexSlices = self.slicingInfos2IndexSlices( slicingInfos )
-
-            #now we want to know if user is requesting for a real slice
-            #or just an element
-            #this is done by trying to get a slice of the dataset self._data
-            aslice = self._data[indexSlices]
-
-            #1. element, not slice
-            if isNumber(aslice) and isNumberList(v) :
-                if len(v) == 2:
-                    self._data[indexSlices] = v[0]
-                    self._errors[indexSlices] = v[1]
-                    pass
-                elif len(v) == len(mydatasets):
-                    for i, ds in enumerate(mydatasets): ds[indexSlices] = v[i]
-                    pass
-                else:
-                    raise RuntimeError , \
-                          "shape mismatch in histogram[ indexes ] = value tuple. "\
-                          "len(value tuple) = %s, but histogram has %s datasets" \
-                          % (len(v), len(mydatasets))
-                return v
-
-            #2. slice
-            #shape = aslice.shape() #get shape
-            # for slice, we would require the right hand side to be a list of datasets
-            if isHistogram( v ): v = v.data(), v.errors()
-            
-            # try to set slice, defer to dataset's __setitem__
-            # but first we must assert length of arrays match
-            assert len(v) == len(mydatasets), \
-                   "rhs must be a %s-tuple of datasets, "\
-                   "instead of a %s-tuple" % (
-                len( mydatasets ), len(v) )
-            for lhs, rhs in zip(mydatasets, v):
-                if rhs is not None : lhs[ indexSlices ] = rhs
-                else: debug.log( 'indefinite behavior: setting to None' )
-                continue
-            
-            return self[ indexes_or_slice ]
+        # slicingInfo tuple --> a tuple of index slices
+        indexSlices = self.slicingInfos2IndexSlices( slicingInfos )
         
-            
-        raise NotImplementedError , "Histogram[ %s ] = %s. my dimension: %s" % (
-            s, v, self.dimension())
+        #now we want to know if user is requesting for a real slice
+        #or just an element
+        #this is done by trying to get a slice of the dataset self._data
+        aslice = self._data[indexSlices]
 
+        #1. element, not slice
+        if isNumber(aslice) and isNumberList(v) :
+            if len(v) == 2:
+                self._data[indexSlices] = v[0]
+                self._errors[indexSlices] = v[1]
+                pass
+            elif len(v) == len(mydatasets):
+                for i, ds in enumerate(mydatasets): ds[indexSlices] = v[i]
+                pass
+            else:
+                raise RuntimeError , \
+                      "shape mismatch in histogram[ indexes ] = value tuple. "\
+                      "len(value tuple) = %s, but histogram has %s datasets" \
+                      % (len(v), len(mydatasets))
+            return v
+
+        #2. slice
+        #shape = aslice.shape() #get shape
+        # for slice, we would require the right hand side to be a list of datasets
+        if isHistogram( v ): v = v.data(), v.errors()
+
+        # try to set slice, defer to dataset's __setitem__
+        # but first we must assert length of arrays match
+        assert len(v) == len(mydatasets), \
+               "rhs must be a %s-tuple of datasets, "\
+               "instead of a %s-tuple" % (
+            len( mydatasets ), len(v) )
+        for lhs, rhs in zip(mydatasets, v):
+            if rhs is not None : lhs[ indexSlices ] = rhs
+            else: debug.log( 'indefinite behavior: setting to None' )
+            continue
+
+        return self[ indexes_or_slice ]
 
 
     #numeric operators
