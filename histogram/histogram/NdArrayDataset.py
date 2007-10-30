@@ -348,8 +348,8 @@ class Dataset( DatasetBase):
             pass
         try:
             self._storage[s] = rhs
-        except:
-            raise ValueError , "rhs = %s" % (rhs, )
+        except Exception, err:
+            raise ValueError , "rhs = %s. %s:%s" % (rhs, err.__class__, err)
         return rhs 
 
 
