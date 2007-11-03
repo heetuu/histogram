@@ -44,6 +44,9 @@ class Histogram( AttributeCont):
         Notes: (1) IndexError if data and errors don't have same shape
         (2) TypeError if data and errors don't have same type"""
 
+        # whether the histogram is a slice (reference not copy) of another histogram
+        self._isslice = kwds.get('isslice') or False
+
         if attributes is None: attributes = dict()
         AttributeCont.__init__( self, attributes)
         self.setAttribute( 'name', name)
@@ -71,6 +74,9 @@ class Histogram( AttributeCont):
 
 
     def isunitless(self): return isunitless(self.unit())
+
+
+    def isslice(self): return self._isslice
 
 
     def __getitem__(self, s):
@@ -140,7 +146,7 @@ class Histogram( AttributeCont):
         #new histogram
         new = Histogram( name = newName, unit = self.unit(),
                          data = newdatasets[0], errors = newdatasets[1],
-                         axes = newAxes, attributes = newAttrs)
+                         axes = newAxes, attributes = newAttrs, slice = True)
 
         #addtional datasets. This is not tested yet!!!
         #probably we should really limit histogram to have only two datasets!!!
@@ -389,7 +395,8 @@ class Histogram( AttributeCont):
             
             raise NotImplementedError , "__mul__ is not defined for %s and %s" % (
                 self.__class__.__name__, other.__class__.__name__, )
-        
+
+        self._syncUnit()
         return self
 
 
@@ -404,7 +411,6 @@ class Histogram( AttributeCont):
             y,  dy2 = other
             if dy2 == 0 or dy2 == 0.0: #special case
                 #ydx/y^2
-                #errs /= y*y; data /= y
                 self._setunit(1.*self.unit()/y)
                 return self
 
@@ -453,9 +459,12 @@ class Histogram( AttributeCont):
 
         else:
             
-            raise NotImplementedError , "__div__ is not defined for %s and %s" % (
-                self.__class__.__name__, other.__class__.__name__, )
+            raise NotImplementedError , "__div__ is not defined for %s and %s. "\
+                  "self=%s, other=%s" % (
+                self.__class__.__name__, other.__class__.__name__,
+                self, other)
 
+        self._syncUnit()
         return self
 
 
@@ -836,6 +845,12 @@ class Histogram( AttributeCont):
         self.setAttribute( 'unit', unit )
         self._data._setunit( unit )
         self._errors._setunit( unit*unit )
+        return
+
+
+    def _syncUnit(self):
+        #synchronize histogram's unit to dataset's unit
+        self.setAttribute( 'unit', self._data.unit() )
         return
 
 

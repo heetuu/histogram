@@ -189,6 +189,21 @@ class NdArrayDataset_TestCase(TestCase):
         return
 
 
+    def test__imul__2(self):
+        'Dataset: a[?]*=b'
+        a = self.Dataset(name = 'a', unit = 'meter', shape = [5],
+                         storage = NdArray('double', range(5) )
+                         )
+        a[1:3] *= 2
+        
+        try:
+            a[1:3] *= 2 * meter
+            raise "Should raise ValueError"
+        except ValueError:
+            pass
+        return
+
+
     def test__idiv__(self):
         "Dataset: operator 'a/=b'"
         ds = self.Dataset(name = "distance", unit = "meter",
@@ -203,6 +218,21 @@ class NdArrayDataset_TestCase(TestCase):
         self.assertVectorAlmostEqual( v, [1,1,1] ) 
 
         self.assertRaises( NotImplementedError , ds.__idiv__, "a" )
+        return
+
+
+    def test__idiv__2(self):
+        'Dataset: a[?]*=b'
+        a = self.Dataset(name = 'a', unit = 'meter', shape = [5],
+                         storage = NdArray('double', range(5) )
+                         )
+        a[1:3] /= 2
+        
+        try:
+            a[1:3] /= 2 * meter
+            raise "Should raise ValueError"
+        except ValueError:
+            pass
         return
 
 

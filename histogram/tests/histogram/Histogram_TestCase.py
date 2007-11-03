@@ -12,6 +12,7 @@
 #
 
 
+import histogram
 
 def createHistogram(noerror = False):
     from histogram import createContinuousAxis, arange, createDiscreteAxis
@@ -279,6 +280,10 @@ class Histogram_TestCase(TestCase):
         histogram[ {'E':1.5} ][ {'tubeId':3} ] = 3, 3
         self.assertVectorAlmostEqual(
             histogram[ {'E':1.5, 'tubeId':3} ], (3, 3) )
+
+        #
+        histogram[ {'E':1.5} ] /= 3,3
+        histogram[ {'E':1.5} ] /= 3,3
         return
 
 
@@ -314,7 +319,11 @@ class Histogram_TestCase(TestCase):
         h *= (2,1)
         self.assertVectorEqual( h[0.5, 1], (0,0) )
         self.assertVectorEqual( h[0.5, 3], (2,9) )
+        return
 
+
+    def test__imul__2(self):
+        "histogram: h*=h2"
         h = self._histogram.copy()
         h2 = self._histogram2
         h *= h2
@@ -333,7 +342,11 @@ class Histogram_TestCase(TestCase):
         h /= (2,0)
         self.assertVectorEqual( h[0.5, 1], (0,0) )
         self.assertVectorEqual( h[0.5, 3], (0.5,1./4) )
+        return
+    
 
+    def test__idiv__2(self):
+        "histogram: h/=h1"
         h = self._histogram.copy()
         h2 = self._histogram2
         h /= h2
@@ -395,6 +408,18 @@ class Histogram_TestCase(TestCase):
 
         h = self._histogram + self._histogram2
         self.assertVectorEqual( h[1.5,1], (6,6) )
+
+        h1 = histogram.histogram( 'h1', [ ['x', range(10)] ] )
+        h1[()] = 1,1
+        
+        h2 = histogram.histogram( 'h2', [ ['x', range(10)] ] )
+        h2[()] = 2,2
+
+        h1*=(2.,0)
+        h2/=(2.,0)
+
+        h3 = h1+h2
+        for x in range(10): self.assertAlmostEqual( h3[x][0], 3 )
         return
     
     

@@ -10,7 +10,7 @@ class Dataset( DatasetBase):
     """datasets that use stdVectors"""
 
     def __init__( self, name='', unit='1', attributes = {},
-                  shape = [], storage = None):
+                  shape = [], storage = None, isslice = False):
         """DatasetBase( name='', unit='', attributes={},
         shape = [], storage = None)
         Inputs:
@@ -23,6 +23,9 @@ class Dataset( DatasetBase):
             new DatasetBase object
         Exceptions: None
         Notes: None"""
+        #whether this dataset is a slice of another dataset
+        self._isslice = isslice
+        
         from DictAttributeCont import AttributeCont
         # copy user's attributes to avoid confusion
         attributeCont = AttributeCont( dict(attributes))
@@ -44,30 +47,19 @@ class Dataset( DatasetBase):
         return
 
 
-    def attribute( self, name):
-        """attribute( attrName) -> attrValue"""
-        return self._attributeCont.getAttribute( name)
-
-
-    def listAttributes( self):
-        """listAttributes() -> [list of attr names]"""
-        return self._attributeCont.listAttributes()
-
-
     def name( self):
         """name() -> name of this axis"""
         return self._attributeCont.getAttribute('name')
 
 
-    def setAttribute( self, name, value):
-        """setAttribute( name, value) -> None"""
-        self._attributeCont.setAttribute( name, value)
-        return
-
-
     def isunitless(self):
         from _units import isunitless
         return isunitless( self.unit() )
+
+
+    def isslice(self):
+        "is this dataset a slice of another dataset?"
+        return self._isslice
 
 
     def shape( self):
@@ -133,6 +125,22 @@ class Dataset( DatasetBase):
         self._setunit( unit )
         return
     
+
+    def attribute( self, name):
+        """attribute( attrName) -> attrValue"""
+        return self._attributeCont.getAttribute( name)
+
+
+    def listAttributes( self):
+        """listAttributes() -> [list of attr names]"""
+        return self._attributeCont.listAttributes()
+
+
+    def setAttribute( self, name, value):
+        """setAttribute( name, value) -> None"""
+        self._attributeCont.setAttribute( name, value)
+        return
+
 
     def copy(self):
         return self._copy( )
@@ -251,6 +259,21 @@ class Dataset( DatasetBase):
         if isNumber(other) and (other == 0 or other == 0.0):
             stor *= 0
             return self
+        if self.isslice() and isNumber(other):
+            #if this dataset is a slice, and other is a number
+            #we just need to work on the array. But we cannot
+            #change unit.
+            stor *= other
+            return self
+        
+        if self.isslice():
+            # if this dataset is actually a slice of another dataset, then
+            # we cannot change unit. otherwise this dataset will
+            # have different unit than the original dataset
+            raise ValueError , \
+                  "%s*%s. This dataset is a slice, we cannot change unit" % (
+                self, other)
+        
         if isNumber(other) or isDimensional(other):
             self.setAttribute( 'unit', self.unit()*other )
         elif isCompatibleDataset(self, other):
@@ -264,6 +287,22 @@ class Dataset( DatasetBase):
 
     def __idiv__(self, other):
         stor = self.storage()
+        
+        if self.isslice() and isNumber(other):
+            #if this dataset is a slice, and other is a number
+            #we just need to work on the array. But we cannot
+            #change unit.
+            stor /= other
+            return self
+        
+        if self.isslice():
+            # if this dataset is actually a slice of another dataset, then
+            # we cannot change unit. otherwise this dataset will
+            # have different unit than the original dataset
+            raise ValueError , \
+                  "%s/%s. This dataset is a slice, we cannot change unit" % (
+                self, other)
+        
         if isNumber(other) or isDimensional(other):
             self.setAttribute('unit', 1.* self.unit()/other)
         elif isCompatibleDataset(self, other):
@@ -331,7 +370,7 @@ class Dataset( DatasetBase):
         else:
             raise IndexError , "Don't know how to do indexing by %s" % (s,)
         
-        if slicing: return self._copy( self._storage[s] )
+        if slicing: return self._copy( self._storage[s], slicing = True )
         return self._storage[s] * self.unit()
         
 
@@ -358,7 +397,7 @@ class Dataset( DatasetBase):
             self.name(), self.unit(), self.storage().asNumarray() )
     
 
-    def _copy(self, storage = None):
+    def _copy(self, storage = None, slicing = False):
         keys = self.listAttributes()
         attrs = {}
         for key in keys: attrs[key] = self.attribute( key )
@@ -368,7 +407,7 @@ class Dataset( DatasetBase):
         
         copy = self.__class__(
             name=self.name(), unit=self.unit(), attributes = attrs,
-            shape = [], storage = storage)
+            shape = [], storage = storage, isslice = slicing)
         return copy
 
 
