@@ -12,6 +12,13 @@
 #
 
 
+# make sure pylab uses WXAgg
+import matplotlib as mpl
+mpl.use('WXAgg')
+del mpl
+
+
+
 from pyre.applications.Script import Script
 
 
