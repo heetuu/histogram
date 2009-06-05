@@ -14,12 +14,26 @@
 
 ## \mainpage histogram
 ##
-## \section intro_sec Introduction
-## histogram package provides the fundamental data structure for
-## <a href="../../../reduction/reduction/html/index.html"> reduction </a> software.
+## \section reference_sec Public Interface
+## Factory methods:
+##   - %histogram: histogram::__init__::histogram
+##   - %axis: histogram::__init__::axis
 ##
-## Here, let us  first make sure we have the same understanding of the word
-## "histogram". The result of any measurement is actually a histogram, by which we mean
+## Classes:
+##   - %Histogram: histogram::Histogram::Histogram
+##   - %Axis: histogram::Axis::Axis
+##
+## I/O methods:
+##   - %histogram.hdf.dump: histogram::hdf::__init__::dump
+##   - %histogram.hdf.load: histogram::hdf::__init__::load
+## 
+## \section intro_sec Introduction
+## histogram package provides a fundamental data structure for data reduction
+## and data analysis.
+##
+## Here, let us explain our definition of 
+## "histogram". The result of a scientific measurement is usually a histogram(s),
+## by which we mean
 ## we have data in some bins. For example, if we measure a spectrum as a function of
 ## time-of-flight, we will get an array of counts, while each element in that array represents
 ## the number of counts measured in a predefined time slot (bin).
@@ -29,7 +43,7 @@
 ##
 ## where \f$\frac{dI}{dx}\f$ is a density function and \f$ \Delta x \f$ is bin size.
 ##
-## From this little discussion, we can know there are two pieces of critical information
+## From this little discussion, we see that there are two pieces of critical information
 ## in a histogram: the data, and the axis (or axes), which is about bin sizes. Some time we
 ## need to know the context that the histogram is in, and that brings us meta-data.
 ## Following is a bit of definitions:
@@ -42,7 +56,7 @@
 ##   - (1) a dataset whose elements represent the number of counts in some range of axis
 ##         or axes values;
 ##   - (2) a set of associations concerning a histogram in the sense of (1) and
-##         potentially everything that can be known about it: errors, axes, history.
+##         potentially everything that can be known about it: error bars, axes, history.
 ## - metadata: data which provides context for other data: data about data.
 ##
 ## \section Design
@@ -73,10 +87,21 @@ def pqvalue( *args ):
 
 
 def axis( name, centers = None, unit = None, boundaries = None):
-    """ create an axis
+    """axis( name, centers=None, unit = None, boundaries=None): create an axis
+    
+    name: The name of the axis.
+    centers: The bin centers of the axis.
+    unit: The unit of the axis.
+    boundaries: The bin boundaries of the axis
 
-    axis( name, centers, unit = None )
+    If both centers and boundaries are specified, boundaries are ignored.
+
+    Examples:
+      axis('tof', boundaries=arange(2000,6000,10), unit='microsecond')
+      axis('energy', centers=arange(-50,50,1.), unit='meV')
+      axis('detectorID', range(0,1000))
     """
+    
     if centers is not None and len(centers) < 1: raise ValueError , "Invalid axis %s" % (centers, )
     if 'ID' in name and centers is not None and _isIntegers(centers) and unit is None:
         return IDaxis( name, centers )
@@ -115,31 +140,81 @@ def histogram( name, axes, data = None, errors = None, unit="1",
                data_type = "double", fromfunction = None):
     
     """create a histogram out of given inputs
+
+    This is the most important method of the histogram package.
+    To use this method, first import it from the histogram package:
+
+      >>> from histogram import histogram
+
+    You may want to import other convenient factory methods too
+
+      >>> from histogram import axis, arange
+
+    The following are explanations of the arguments of this method,
+    which is followed by some examples.
     
-    axes are a list of axis, each axis could be specified by
-      - a tuple of (axis_name, axis_bins, (optionally)unit)
+    axes: a list of axis, each axis could be specified by one of the following
+      - a tuple of (name, bin_centers, (optionally)unit)
       - an Axis instance
-      
-    data and errors are multiple dimensional arrays.
-    
-    data is the m-D array of data
 
-    errors is the m-D array of squares of error bars
+    data and errors:  multiple dimensional arrays of data and errorbar squares
+      - data: m-D arraya of data
+      - errors: m-D array of squares of error bars
 
-    data and errors can be left unspecified. In that case, they
-    will be initialized to all zeros.
+    fromfunction: create data and errors from user-defined function(s). This
+      keyword overrides keywords 'data' and 'errors'.
 
-    unit is the unit of the data
+    If neither the 'data/errors' keywords nor the 'fromfunction' keyword is
+    specified, data and error bars are initialized to zeros.
+
+    data_type: type of data array. acceptable types:
+      - 'double'
+      - 'float'
+      - 'int'
+
+    unit: the unit of the data
 
     Examples:
 
-      histogram( 'S',
+    Directly create a histogram without pre-creation of axes:
+      sqe = histogram( 'SQE',
         [ ('Q', arange(0., 13., 0.1), 'angstrom**-1'),
           ('E', arange(-50,50., 1.), 'meV'), ],
-        [ ... data matrix (131X101) ... ],
-        [ ... square of error bar matrix (131X101) ... ],
+        data = [ ... data matrix (130X100) ... ],
+        errors = [ ... square of error bar matrix (130X100) ... ],
         )
+
+    Create axes first, and then create the histogram:
+      Qaxis = axis('Q', centers=arange(0, 13., 0.1), unit='angstrom**-1')
+      Eaxis = axis('E', centers=arange(-50, 50., 1), unit='meV')
+      sqe = histogram( 'SQE',
+        (Qaxis, Eaxis),
+        data = [ ... data matrix (130X100) ... ],
+        errors = [ ... square of error bar matrix (130X100) ... ],
+        )
+
+    Create histogram using keyword 'fromfunction':
+      1D:
+        xaxis = axis('x', arange(10))
+        hx = histogram('hx', [xaxis], fromfunction=numpy.sin)
         
+      2D:
+        xaxis = axis('x', arange(10))
+        yaxis = axis('y', arange(10))
+        hxy = histogram('hxy', [xaxis, yaxis],
+            fromfunction=lambda x,y: numpy.sin(x*y))
+
+      3D:
+        xaxis = axis('x', arange(10))
+        yaxis = axis('y', arange(10))
+        zaxis = axis('z', arange(10))
+        hxyz = histogram('hxyz', [xaxis, yaxis, zaxis],
+            fromfunction=lambda x,y,z: x**2+numpy.sin(y)+z**3*x*y)
+
+      Specify 2 functions. One for data, another for error bar squares.
+        xaxis = axis('x', arange(10))
+        hx = histogram('hx', [xaxis],
+            fromfunction=(numpy.sin, lambda x:numpy.abs(numpy.sin(x))))
     """
     h = makeHistogram( name, axes, data, errors, unit = unit,
                        data_type = data_type )
