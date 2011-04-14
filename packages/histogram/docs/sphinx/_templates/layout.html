@@ -1,0 +1,36 @@
+{% extends "!layout.html" %}
+
+
+{% block rootrellink %}
+        <li><a href="{{ pathto('index') }}">Histogram</a>|&nbsp;</li>
+        <li><a href="{{ pathto('install')}}">Installation</a> |&nbsp;</li>
+        <li>&nbsp; &nbsp; <a href="{{ pathto('search') }}">search</a></li>
+{% endblock %}
+
+<!--        <li><a href="{{ pathto('index') }}">documentation </a> &raquo;</li>-->
+
+{% block relbar1 %}
+<div class="header">
+<table><tr>
+<td>
+<div style="text-align: left; padding: 7px 7px 10px 10px">
+<a href="https://vnf.caltech.edu"><img class="logo" src="{{
+pathto("_static/logo.png", 1) }}" border="0" alt="py4sci"
+  height="60"/></a>
+</div>
+</td>
+<td style="padding: 0pt 0pt 1em 3em;">
+<h1 class="title">
+histogram
+</h1>
+</td>
+</tr>
+</table>
+</div>
+{{ super() }}
+{% endblock %}
+
+{# put the sidebar before the body #}
+{% block sidebar1 %}{{ sidebar() }}{% endblock %}
+{% block sidebar2 %}{% endblock %}
+
