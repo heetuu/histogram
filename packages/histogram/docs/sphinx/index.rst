@@ -15,7 +15,6 @@ Contents:
    install
    python-interface
    commands
-   gui
 
 Indices and tables
 ==================

@@ -24,11 +24,11 @@ Here is an example of a python session::
     axes = [xaxis, yaxis]
     h = histogram( "intensity", axes, fromfunction=lambda x,y: x**2+y**2)
     print h
-    plot(h)
+    plot(h)   # need matplotlib
     help(h)
     slice = h[3, ()]
-    from histogram.hdf import dump
-    dump(slice, 'slice.h5')
+    from histogram.hdf import dump  # need h5py
+    dump(slice, 'slice.h5')  
 
 
 Features
@@ -40,7 +40,6 @@ Features
 * :ref:`Easy access to data as numpy arrays <I_E2>`
 * :ref:`Dump/load histograms in hdf format <save_load>`
 * :ref:`Quick plot using matplotlib <plot>`
-* Minimal GUI application that 
 
 
 Getting Started
@@ -48,7 +47,6 @@ Getting Started
 
 * :ref:`Installation <install>`
 * :ref:`Python interface <python-interface>`
-* :ref:`Minimal GUI <gui>`
 
 
 
