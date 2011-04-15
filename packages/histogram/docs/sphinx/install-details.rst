@@ -24,7 +24,7 @@ The histogram package can be installed by using easy_install::
  $ easy_install histogram
 
 Or you can download histogram package from 
-http://dev.danse.us/packages/histogram-0.2dev.tar.gz
+http://dev.danse.us/packages/histogram-0.2.tar.gz
 
 Expand and enter it, and run::
 
