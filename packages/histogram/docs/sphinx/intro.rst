@@ -49,6 +49,11 @@ Getting Started
 * :ref:`Python interface <python-interface>`
 
 
+More information
+^^^^^^^^^^^^^^^^
+* `The histogram user group <http://googlegroups.com/group/histogram-users>`_
+* `The danse project <http://danse.us>`_
+
 
 This package is a product of the
 `DANSE <http://danse.us>`_ project, 
