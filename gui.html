@@ -1,0 +1,316 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Histogram GUI &mdash; histogram 0.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="histogram 0.2 documentation" href="index.html" />
+    <link rel="prev" title="Commands" href="commands.html" /> 
+  </head>
+  <body>
+<div class="header">
+<table><tr>
+<td>
+<div style="text-align: left; padding: 7px 7px 10px 10px">
+<a href="https://vnf.caltech.edu"><img class="logo" src="_static/logo.png" border="0" alt="py4sci"
+  height="60"/></a>
+</div>
+</td>
+<td style="padding: 0pt 0pt 1em 3em;">
+<h1 class="title">
+histogram
+</h1>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="commands.html" title="Commands"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Histogram</a>|&nbsp;</li>
+        <li><a href="install.html">Installation</a> |&nbsp;</li>
+        <li>&nbsp; &nbsp; <a href="search.html">search</a></li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Histogram GUI</a><ul>
+<li><a class="reference internal" href="#launch-the-histogram-gui">Launch the Histogram GUI</a></li>
+<li><a class="reference internal" href="#load-a-histogram">Load a Histogram</a></li>
+<li><a class="reference internal" href="#embedded-python-shell">Embedded python shell</a><ul>
+<li><a class="reference internal" href="#d-false-color-plotting">2D False-Color Plotting</a></li>
+<li><a class="reference internal" href="#plot-of-a-1d-curve">Plot of a 1D Curve</a></li>
+<li><a class="reference internal" href="#find-bad-detectors">Find bad detectors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tools-menu">Tools menu</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="commands.html"
+                        title="previous chapter">Commands</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/gui.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="histogram-gui">
+<span id="gui"></span><h1>Histogram GUI<a class="headerlink" href="#histogram-gui" title="Permalink to this headline">¶</a></h1>
+<p>Histogram GUI interface helps you work on histograms, and see what you are doing.</p>
+<div class="section" id="launch-the-histogram-gui">
+<h2>Launch the Histogram GUI<a class="headerlink" href="#launch-the-histogram-gui" title="Permalink to this headline">¶</a></h2>
+<p>To launch the Histogram GUI application, type the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ HistogramGUIApp.py
+</pre></div>
+</div>
+<p>The main window will appear.</p>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/guiapp.png"><img alt="_images/guiapp.png" src="_images/guiapp.png" style="width: 700px;" /></a>
+<p class="caption"><em>Fig. 1 Histogram GUI snapshot</em></p>
+</div>
+<p>The window is divided into three parts:</p>
+<ol class="arabic simple">
+<li>list of opened histograms are presented in the upper left corner,</li>
+<li>plot of the current histogram is presented at the upper right, and</li>
+<li>embedded python shell is available in the bottom window.</li>
+</ol>
+</div>
+<div class="section" id="load-a-histogram">
+<h2>Load a Histogram<a class="headerlink" href="#load-a-histogram" title="Permalink to this headline">¶</a></h2>
+<p>A histogram can be loaded from a python pickle file.
+<a class="reference external" href="http://docs.danse.us/histogram/reduction/Software-UserGuide/html/index.html">Reduction</a>
+applications such as LrmecsReductionLight and PharosReductionLight can produce histograms in the
+proper format of pickled files.</p>
+<p>To load a pickled histogram, select &#8220;File&#8221; from the main menu, and click &#8220;Open
+histogram&#8221;. A file dialog will show up, and you can pick a pickle file. Examples
+of file names of pickled histograms are &#8220;sqehist.pkl&#8221;, &#8220;spehist.pkl&#8221;.</p>
+<p>After you load the histogram, the name of this histogram will show up in the
+histogram list in the window at the upper left, a plot will appear in the upper
+right window, and the histogram is also available in the embedded shell window to
+be manipulated further. You can save the plot by using menu &#8220;File&#8221; &#8211;&gt; &#8220;Save plot
+to file&#8221;.</p>
+</div>
+<div class="section" id="embedded-python-shell">
+<h2>Embedded python shell<a class="headerlink" href="#embedded-python-shell" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>Note: Some examples in this tutorial can be found under the &quot;Tools&quot; menu.
+</pre></div>
+</div>
+<p>In the embedded python shell you can fine-tune your plot using
+<a class="reference external" href="http://matplotlib.sourceforge.net/matplotlib.pylab.html">pylab commands</a> .
+If you are familiar with pylab or matlab, this should be really easy for you.</p>
+<p>Here we explain how you may want to perform some simple tasks with the embedded
+python shell.</p>
+<div class="section" id="d-false-color-plotting">
+<h3>2D False-Color Plotting<a class="headerlink" href="#d-false-color-plotting" title="Permalink to this headline">¶</a></h3>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/sqe.png"><img alt="_images/sqe.png" src="_images/sqe.png" style="width: 700px;" /></a>
+<p class="caption"><em>Fig. 2 S(Q,E)</em></p>
+</div>
+<p>Let us first open a 2D histogram. From the menu bar, follow the sequence:</p>
+<div class="highlight-python"><div class="highlight"><pre>File --&gt; Open histogram --&gt; Choose sqehist.pkl --&gt; Click open
+</pre></div>
+</div>
+<p>or you can do it in the command line window</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SQEData</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="nb">open</span><span class="p">(</span> <span class="s">&#39;sqehist.pkl&#39;</span> <span class="p">)</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>A pseudo-color plot will appear. Plot the transpose of I:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">SQEData1</span> <span class="o">=</span> <span class="n">SQEData</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Choose a range for axes</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">12</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>Usually the automatically-selected ticks work quite well. But if it is neceesary,
+you can choose the tick mark spacing or add minor tick marks:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">majorticks</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">minorticks</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span> <span class="o">=</span> <span class="n">pylab</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span> <span class="n">major</span> <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span> <span class="n">minor</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>You may notice that the minor ticks are really small, and you many want to change
+the apperarance of the plot. We can change labels of the axes. The best visual
+appearance can be achieved with LaTeX typesetting. This is done by first enabling
+LaTeX support, and then specifying label texts using LaTeX syntax. Please remember
+to use &#8220;raw&#8221; python strings (for example, r&#8221;$AA$&#8217; will work, but &#8216;$AA$&#8217; won&#8217;t):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s">&#39;text.usetex&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="c">#enable LaTeX</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span> <span class="s">r&quot;$Q {\rm(\AA^{-1})}$&quot;</span> <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span> <span class="s">r&quot;$E {\rm(eV)}$&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>You may add a title:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">title</span><span class="p">(</span> <span class="s">r&quot;$S(Q,E)$&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>or add a colorbar,</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can choose the range of &#8220;z&#8221; values in which color-coding will be applied</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">clim</span><span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1e-3</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>You can choose a color palette (some color palettes render the faint details better than others). For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">hot</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">bone</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The following color maps are provided by pylab:</p>
+<div class="highlight-python"><div class="highlight"><pre>autumn bone cool copper flag gray hot hsv jet pink prism
+spring summer winter spectral
+</pre></div>
+</div>
+<p>If you have questions about color maps, you can get help by</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">help</span><span class="p">(</span><span class="n">pylab</span><span class="o">.</span><span class="n">colormaps</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Choice of plotting intensity I or Sqrt(I) or Ln(I) (if no zeroes)</p>
+<div class="highlight-python"><div class="highlight"><pre>???
+</pre></div>
+</div>
+<p>You can zoom into a particular region by left-dragging your mouse. You can get a slice of the original data as fllows</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">h</span> <span class="o">=</span> <span class="n">SQEData</span><span class="p">[</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>The slicing syntax is</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">histslice</span> <span class="o">=</span> <span class="n">histogram</span><span class="p">[</span> <span class="p">(</span><span class="n">axis1min</span><span class="p">,</span> <span class="n">axis1max</span><span class="p">),</span> <span class="p">(</span><span class="n">axis2min</span><span class="p">,</span> <span class="n">axis2max</span><span class="p">),</span> <span class="o">...</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>Again, you might find the
+<a class="reference external" href="http://matplotlib.sourceforge.net/matplotlib.pylab.html">documentation for pylab</a>
+to be handy.</p>
+</div>
+<div class="section" id="plot-of-a-1d-curve">
+<h3>Plot of a 1D Curve<a class="headerlink" href="#plot-of-a-1d-curve" title="Permalink to this headline">¶</a></h3>
+<div class="figure">
+<a class="reference internal image-reference" href="_images/diffraction-pattern.png"><img alt="_images/diffraction-pattern.png" src="_images/diffraction-pattern.png" style="width: 700px;" /></a>
+<p class="caption"><em>Fig. 3 Diffraction pattern</em></p>
+</div>
+<p>Continueing from the last section, we can create a 1D histogram by taking a sum
+of the 2D histogram SQEData over an axis. Before we can do that, we need to know
+the name of the axis over which the sum will be taken. This can be done by printing
+out the information about a histogram:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">SQEData</span>
+</pre></div>
+</div>
+<p>and you will see a line like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>- Axis energy: [ -50.0, -49.0, ..., 50.0 ]
+</pre></div>
+</div>
+<p>This will tell us there is an axis called &#8220;energy&#8221;, and this axis name becomes
+the argument of method &#8220;sum&#8221; in the following command</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">I_Q</span> <span class="o">=</span> <span class="n">SQEData</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="s">&quot;energy&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>You can zoom into a particular region by left-dragging your mouse. You can also
+zoom in by entering commands in the python shell window if you prefer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span> <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pylab</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="find-bad-detectors">
+<h3>Find bad detectors<a class="headerlink" href="#find-bad-detectors" title="Permalink to this headline">¶</a></h3>
+<p>An important task in data reduction is to find out bad detectors. It can be
+performed by looking at the histogram of I(detector, pixel).</p>
+<p>To obtain I(detector, pixel) from measured data, you can follow the instructions
+<a class="reference external" href="http://docs.danse.us/histogram/measurement/UserGuide/html/index.html">here</a> .</p>
+</div>
+</div>
+<div class="section" id="tools-menu">
+<h2>Tools menu<a class="headerlink" href="#tools-menu" title="Permalink to this headline">¶</a></h2>
+<p>The menu &#8220;Tools&#8221; is dynamic. You can load a toolset onto that menu by using menu &#8220;File&#8211;&gt;Load a toolset&#8221;.</p>
+<p>The default set of menus under the &#8220;Tools&#8221; menu are:</p>
+<ul class="simple">
+<li>Raw data</li>
+<li>Reduction</li>
+<li>PRL</li>
+<li>Web</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="commands.html" title="Commands"
+             >previous</a> |</li>
+        <li><a href="index.html">Histogram</a>|&nbsp;</li>
+        <li><a href="install.html">Installation</a> |&nbsp;</li>
+        <li>&nbsp; &nbsp; <a href="search.html">search</a></li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2004-2011, Jiao Lin, J Brandon Keith, Alex Dementsove, and Tim Kelley.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

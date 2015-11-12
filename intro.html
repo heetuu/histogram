@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; histogram 0.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="histogram 0.2 documentation" href="index.html" />
+    <link rel="next" title="Installation" href="install.html" />
+    <link rel="prev" title="Histogram: User’s Guide" href="index.html" /> 
+  </head>
+  <body>
+<div class="header">
+<table><tr>
+<td>
+<div style="text-align: left; padding: 7px 7px 10px 10px">
+<a href="https://vnf.caltech.edu"><img class="logo" src="_static/logo.png" border="0" alt="py4sci"
+  height="60"/></a>
+</div>
+</td>
+<td style="padding: 0pt 0pt 1em 3em;">
+<h1 class="title">
+histogram
+</h1>
+</td>
+</tr>
+</table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Histogram: User’s Guide"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Histogram</a>|&nbsp;</li>
+        <li><a href="install.html">Installation</a> |&nbsp;</li>
+        <li>&nbsp; &nbsp; <a href="search.html">search</a></li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li><a class="reference internal" href="#more-information">More information</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Histogram: User&#8217;s Guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/intro.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<span id="intro"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>The histogram <a class="reference external" href="http://python.org">python</a> package
+provides a simple yet fundamental
+data structure for scientific computing: histogram.
+A histogram object is a container of axes, data, and error bars.
+With this package, you can create histograms, take slices of them,
+and perform numerical operations.</p>
+<p>Here is an example of a python session:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">histogram</span> <span class="kn">import</span> <span class="n">histogram</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">arange</span><span class="p">,</span> <span class="n">plot</span>
+<span class="n">xaxis</span> <span class="o">=</span> <span class="n">axis</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s">&#39;meter&#39;</span><span class="p">)</span>
+<span class="n">yaxis</span> <span class="o">=</span> <span class="n">axis</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">arange</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s">&#39;cm&#39;</span><span class="p">)</span>
+<span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">xaxis</span><span class="p">,</span> <span class="n">yaxis</span><span class="p">]</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">histogram</span><span class="p">(</span> <span class="s">&quot;intensity&quot;</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">fromfunction</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">+</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">h</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+<span class="n">help</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+<span class="nb">slice</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="p">()]</span>
+<span class="kn">from</span> <span class="nn">histogram.hdf</span> <span class="kn">import</span> <span class="n">dump</span>
+<span class="n">dump</span><span class="p">(</span><span class="nb">slice</span><span class="p">,</span> <span class="s">&#39;slice.h5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="python-interface.html#cheatsheat"><em>Carries both data and error bars</em></a> and
+has a <a class="reference internal" href="python-interface.html#error-prop"><em>default implementation for error propagation</em></a></li>
+<li><a class="reference internal" href="python-interface.html#slicing"><em>Flexible slicing to get sub-histograms</em></a></li>
+<li><a class="reference internal" href="python-interface.html#i-e2"><em>Easy access to data as numpy arrays</em></a></li>
+<li><a class="reference internal" href="python-interface.html#save-load"><em>Dump/load histograms in hdf format</em></a></li>
+<li><a class="reference internal" href="python-interface.html#plot"><em>Quick plot using matplotlib</em></a></li>
+<li>Minimal GUI application that</li>
+</ul>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="install.html#install"><em>Installation</em></a></li>
+<li><a class="reference internal" href="python-interface.html#python-interface"><em>Python interface</em></a></li>
+<li><a class="reference internal" href="gui.html#gui"><em>Minimal GUI</em></a></li>
+</ul>
+</div>
+<div class="section" id="more-information">
+<h2>More information<a class="headerlink" href="#more-information" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="http://googlegroups.com/group/histogram-users">The histogram user group</a></li>
+<li><a class="reference external" href="http://danse.us">The danse project</a></li>
+</ul>
+<p>This package is a product of the
+<a class="reference external" href="http://danse.us">DANSE</a> project,
+which is supported by the US National Science Foundation
+under grant DMR-0520547.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="install.html" title="Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Histogram: User’s Guide"
+             >previous</a> |</li>
+        <li><a href="index.html">Histogram</a>|&nbsp;</li>
+        <li><a href="install.html">Installation</a> |&nbsp;</li>
+        <li>&nbsp; &nbsp; <a href="search.html">search</a></li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2004-2011, Jiao Lin, J Brandon Keith, Alex Dementsove, and Tim Kelley.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
